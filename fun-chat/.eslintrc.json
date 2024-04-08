@@ -1,0 +1,51 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "airbnb-base",
+    "airbnb-typescript/base",
+    "plugin:@typescript-eslint/recommended-type-checked",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
+    "plugin:prettier/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "project": ["**/tsconfig.json"],
+    "createDefaultProgram": true
+  },
+  "root": true,
+  "plugins": ["import", "@typescript-eslint", "@stylistic/ts", "prettier"],
+  "env": {
+    "browser": true,
+    "es2016": true
+  },
+  "rules": {
+    "import/prefer-default-export": "off",
+    "curly": ["error", "all"],
+    "max-lines-per-function": ["error", { "max": 40, "skipBlankLines": true, "skipComments": true }],
+    "@typescript-eslint/no-inferrable-types": "error",
+    "@typescript-eslint/no-misused-promises": "warn",
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/explicit-member-accessibility": [
+      "error",
+      {
+        "accessibility": "explicit",
+        "overrides": {
+          "constructors": "off"
+        }
+      }
+    ],
+    "@typescript-eslint/consistent-type-exports": "error",
+    "@typescript-eslint/consistent-type-imports": "error",
+    "@stylistic/ts/indent": ["error", 2],
+    "class-methods-use-this": "off",
+    "prettier/prettier": [
+      "error",
+      {
+        "endOfLine": "lf"
+      }
+    ]
+  }
+}
