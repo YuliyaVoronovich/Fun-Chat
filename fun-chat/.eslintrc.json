@@ -16,12 +16,14 @@
     "createDefaultProgram": true
   },
   "root": true,
+  //"noInlineConfig": true,
   "plugins": ["import", "@typescript-eslint", "@stylistic/ts", "prettier"],
   "env": {
     "browser": true,
     "es2016": true
   },
   "rules": {
+    "no-console": "off",
     "import/prefer-default-export": "off",
     "curly": ["error", "all"],
     "max-lines-per-function": ["error", { "max": 40, "skipBlankLines": true, "skipComments": true }],

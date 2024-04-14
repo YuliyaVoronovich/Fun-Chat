@@ -1,0 +1,10 @@
+@import '../node_modules/modern-normalize/modern-normalize.css';
+@import '../node_modules/bootstrap/dist/css/bootstrap.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
