@@ -25,6 +25,8 @@ class SocketService {
 
   public roomName?: string;
 
+  public error$ = new ObserverWithFilter<EventData>();
+
   public login$ = new ObserverWithFilter<EventData>();
 
   public logout$ = new ObserverWithFilter<EventData>();
@@ -37,6 +39,7 @@ class SocketService {
     return new Promise<boolean>((resolve, reject) => {
       if (this.socket && this.socket.readyState === WebSocket.OPEN) {
         try {
+          console.log(message);
           this.socket.send(message);
           resolve(true);
         } catch (err) {
@@ -68,6 +71,9 @@ class SocketService {
 
       // подписка
       switch (type) {
+        case SocketType.ERROR:
+          this.error$.notify({ type: SocketType.ERROR, payload: response.payload.error });
+          break;
         case SocketType.UserLogin: {
           this.login$.notify({ type: SocketType.UserLogin, payload: { user: response.payload.user } });
           break;
@@ -93,6 +99,7 @@ class SocketService {
         password,
       },
     });
+
     return this.sendSocketMessage(userData);
   }
 
