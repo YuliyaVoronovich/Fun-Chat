@@ -9,11 +9,8 @@ export default class Page extends BaseComponent {
       tag: 'section',
       className: 'page-section',
     });
-    const buttonWrapper = new BaseComponent({
-      tag: 'aside',
-      className: 'button-wrapper',
-    });
-    this.appendChildren([buttonWrapper, this.section]);
+
+    this.appendChildren([this.section]);
   }
 
   public setContent(section: BaseComponent): void {

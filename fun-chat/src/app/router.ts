@@ -1,11 +1,12 @@
 import type { BaseComponent } from './components/base-component';
 import type Page from './pages/page';
+import { sessionStorageInst } from './services/session-service';
 
 const mapRoutes = {
-  '': () => import('./pages/login-page/login-page').then((item) => item.LoginPage),
+  '/': () => import('./pages/login-page/login-page').then((item) => item.LoginPage),
   login: () => import('./pages/login-page/login-page').then((item) => item.LoginPage),
-  // chat: () => import('./pages/chat-page/chat-page').then((item) => item.ChatPage),
-  // about: () => import('./pages/about-page/about-page').then((item) => item.AboutPage),
+  chat: () => import('./pages/chat-page/chat-page').then((item) => item.ChatPage),
+  about: () => import('./pages/about-page/about-page').then((item) => item.AboutPage),
 };
 
 type Route = keyof typeof mapRoutes;
@@ -21,14 +22,25 @@ export default class Router {
   }
 
   public handleLocationChange(): void {
+    const isUser: boolean = sessionStorageInst.checkUser('user');
     const pathname = window.location.hash.slice(1);
 
-    if (!isValidRoute(pathname)) {
+    let currentPath;
+    if (!isUser) {
+      currentPath = '/';
+    } else if (!pathname) {
+      currentPath = 'chat';
+    } else {
+      currentPath = `${pathname}`;
+    }
+    console.log(currentPath);
+
+    if (!isValidRoute(currentPath)) {
       return;
     }
     // TODO Check Autorization login
 
-    this.setViewContent(pathname)
+    this.setViewContent(currentPath)
       .then((data) => {
         this.routerOutlet.setContent(data);
       })

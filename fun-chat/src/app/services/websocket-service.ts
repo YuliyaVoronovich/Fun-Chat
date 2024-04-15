@@ -39,7 +39,6 @@ class SocketService {
     return new Promise<boolean>((resolve, reject) => {
       if (this.socket && this.socket.readyState === WebSocket.OPEN) {
         try {
-          console.log(message);
           this.socket.send(message);
           resolve(true);
         } catch (err) {
@@ -75,11 +74,11 @@ class SocketService {
           this.error$.notify({ type: SocketType.ERROR, payload: response.payload.error });
           break;
         case SocketType.UserLogin: {
-          this.login$.notify({ type: SocketType.UserLogin, payload: { user: response.payload.user } });
+          this.login$.notify({ type: SocketType.UserLogin, payload: response.payload.user });
           break;
         }
         case SocketType.UserLogout:
-          this.logout$.notify({ type: SocketType.UserLogout, payload: { user: response.payload.user } });
+          this.logout$.notify({ type: SocketType.UserLogout, payload: response.payload.user });
           break;
         default:
           break;

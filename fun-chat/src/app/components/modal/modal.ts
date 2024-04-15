@@ -21,7 +21,8 @@ export class Modal extends BaseComponent {
   }
 
   public alertMess = (message: string, type: string) => {
-    console.log(message);
+    this.modal.addClass('show');
+    this.modal.removeClass('fade');
     this.modal.addClass(`alert-${type}`);
     this.modal.setHTML(`<div>${message}</div>`);
     this.modal.appendChildren([this.btnClose]);

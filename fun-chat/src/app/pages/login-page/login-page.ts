@@ -6,16 +6,20 @@ import { userService } from '../../services/user-services';
 import { SocketType } from '../../interfaces.ts/sockets';
 import { LoginForm } from '../../components/login-form/login-form';
 import { Modal } from '../../components/modal/modal';
+import { Button } from '../../components/button/button';
+import './login-page.scss';
 
 export class LoginPage extends BaseComponent {
   private readonly form: LoginForm;
 
   private readonly modal = new Modal();
 
+  private readonly about = new Button({ type: 'button', className: 'btn btn-success', textContent: 'About' });
+
   constructor() {
     super({ tag: 'div', className: 'login-wrapper' });
     this.form = new LoginForm(this.getFormData);
-    this.appendChildren([this.form, this.modal]);
+    this.appendChildren([this.form, this.about, this.modal]);
 
     // подписка на событие
 
@@ -25,22 +29,21 @@ export class LoginPage extends BaseComponent {
     );
 
     socketService.login$.subscribe(
-      (data) => console.log('ObserverA:', data),
+      (data) => (data.payload.isLogined ? this.navigate() : null),
       (data) => data.type === SocketType.UserLogin,
     );
 
     socketService.logout$.subscribe((data) => data.type === SocketType.UserLogout);
-
-    // userService.logout('Qwerty', 'Qwerty');
   }
 
   private getFormData = (login: string, password: string) => {
-    console.log(login);
-    console.log(password);
-
     if (login && password) {
       userService.login(login, password);
       sessionStorageInst.setItem('user', { login, password });
     }
+  };
+
+  private navigate = () => {
+    window.location.href = `#chat`;
   };
 }
