@@ -4,7 +4,7 @@ export default class Page extends BaseComponent {
   private section: BaseComponent;
 
   constructor() {
-    super({ tag: 'div', className: 'wrapper' });
+    super({ tag: 'div', className: 'container-wrapper' });
     this.section = new BaseComponent({
       tag: 'section',
       className: 'page-section',

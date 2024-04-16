@@ -25,10 +25,9 @@ export default class Router {
     const isUser: boolean = sessionStorageInst.checkUser('user');
     const pathname = window.location.hash.slice(1);
 
-    console.log(pathname);
     let currentPath;
-    if (!isUser) {
-      currentPath = '';
+    if (!isUser && pathname !== 'about') {
+      currentPath = 'login';
     } else if (!pathname || pathname === 'login') {
       currentPath = 'chat';
     } else {

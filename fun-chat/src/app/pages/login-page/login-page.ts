@@ -14,10 +14,17 @@ export class LoginPage extends BaseComponent {
 
   private readonly modal = new Modal();
 
-  private readonly about = new Button({ type: 'button', className: 'btn btn-success', textContent: 'About' });
+  private readonly about = new Button({
+    type: 'button',
+    className: 'btn btn-success',
+    textContent: 'About',
+    onClick: (): void => {
+      window.location.href = `#about`;
+    },
+  });
 
   constructor() {
-    super({ tag: 'div', className: 'login-wrapper' });
+    super({ tag: 'div', className: 'wrapper login-wrapper' });
     this.form = new LoginForm(this.getFormData);
     this.appendChildren([this.form, this.about, this.modal]);
 
