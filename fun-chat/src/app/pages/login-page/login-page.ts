@@ -28,8 +28,6 @@ export class LoginPage extends BaseComponent {
     this.form = new LoginForm(this.getFormData);
     this.appendChildren([this.form, this.about, this.modal]);
 
-    // подписка на событие
-
     socketService.error$.subscribe(
       (data) => this.modal.alertMess(data.payload as string, 'danger'),
       (data) => data.type === SocketType.ERROR,

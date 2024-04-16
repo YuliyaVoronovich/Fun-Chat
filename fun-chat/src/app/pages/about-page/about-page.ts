@@ -1,6 +1,6 @@
+import './about-page.scss';
 import { Button } from '../../components/button/button';
 import { BaseComponent } from '../../components/base-component';
-import './about-page.scss';
 import { Link } from '../../components/link/link';
 
 const text = 'An application Fun Chat for fun communication with friends';

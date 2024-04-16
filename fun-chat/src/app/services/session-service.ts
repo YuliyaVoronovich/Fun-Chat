@@ -6,7 +6,7 @@ class SessionStorage {
   }
 
   private static getItem(key: string): unknown {
-    const data: string | null = localStorage.getItem(key);
+    const data: string | null = sessionStorage.getItem(key);
 
     if (data !== null) {
       return JSON.parse(data);
@@ -16,7 +16,7 @@ class SessionStorage {
   }
 
   public getUser(key: string): User | null {
-    const user = sessionStorage.getItem(`${key}`);
+    const user = SessionStorage.getItem(`${key}`);
 
     if (!user) {
       return null;
@@ -38,7 +38,7 @@ class SessionStorage {
   }
 
   public deleteData(key: string): void {
-    localStorage.removeItem(`${key}`);
+    sessionStorage.removeItem(`${key}`);
   }
 }
 export const sessionStorageInst = new SessionStorage();
