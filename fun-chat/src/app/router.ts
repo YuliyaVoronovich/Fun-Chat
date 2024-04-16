@@ -3,7 +3,7 @@ import type Page from './pages/page';
 import { sessionStorageInst } from './services/session-service';
 
 const mapRoutes = {
-  '/': () => import('./pages/login-page/login-page').then((item) => item.LoginPage),
+  '': () => import('./pages/login-page/login-page').then((item) => item.LoginPage),
   login: () => import('./pages/login-page/login-page').then((item) => item.LoginPage),
   chat: () => import('./pages/chat-page/chat-page').then((item) => item.ChatPage),
   about: () => import('./pages/about-page/about-page').then((item) => item.AboutPage),
@@ -25,15 +25,16 @@ export default class Router {
     const isUser: boolean = sessionStorageInst.checkUser('user');
     const pathname = window.location.hash.slice(1);
 
+    console.log(pathname);
     let currentPath;
     if (!isUser) {
-      currentPath = '/';
-    } else if (!pathname) {
+      currentPath = '';
+    } else if (!pathname || pathname === 'login') {
       currentPath = 'chat';
     } else {
       currentPath = `${pathname}`;
     }
-    console.log(currentPath);
+    window.location.hash = currentPath;
 
     if (!isValidRoute(currentPath)) {
       return;
