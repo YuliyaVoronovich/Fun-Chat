@@ -7,7 +7,6 @@ export class User extends BaseComponent {
   constructor(login: string, isLogined: boolean) {
     super({ tag: 'li', className: 'user-item' });
     const online = isLogined ? '-active' : '-no-active';
-    console.log(online);
     this.label = new BaseComponent({
       tag: 'div',
       className: `user-label status status${online}`,
