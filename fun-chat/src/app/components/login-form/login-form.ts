@@ -31,7 +31,7 @@ export class LoginForm extends BaseComponent<HTMLFormElement> {
     this.setAttribute('novalidate', 'novalidate');
     this.login = new Input({
       type: 'text',
-      classNameInput: 'form-control form-input-name',
+      className: 'form-control form-input-name',
       name: 'Name',
       placeholder: 'Input name',
     });
@@ -39,7 +39,7 @@ export class LoginForm extends BaseComponent<HTMLFormElement> {
     this.login.setAttribute('pattern', patternLogin);
     this.password = new Input({
       type: 'password',
-      classNameInput: 'form-control form-input-password',
+      className: 'form-control form-input-password',
       placeholder: 'Input password',
     });
     this.password.setAttribute('required', 'required');

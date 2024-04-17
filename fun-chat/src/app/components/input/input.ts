@@ -2,7 +2,7 @@ import { BaseComponent } from '../base-component';
 
 interface IInput {
   type: string;
-  classNameInput: string;
+  className: string;
   name?: string;
   placeholder?: string;
   value?: string;
@@ -10,10 +10,10 @@ interface IInput {
 }
 
 export class Input extends BaseComponent<HTMLInputElement> {
-  constructor({ type, classNameInput, name, placeholder, value, onInput }: IInput) {
+  constructor({ type, className, name, placeholder, value, onInput }: IInput) {
     super({
       tag: 'input',
-      className: classNameInput,
+      className,
       type,
       name,
       placeholder,

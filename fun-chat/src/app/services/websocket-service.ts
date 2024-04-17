@@ -1,10 +1,8 @@
+import { baseURL, wsProtocol } from '../constants';
 import type { WsMessage } from '../interfaces.ts/sockets';
 import { SocketType } from '../interfaces.ts/sockets';
 
-import { ObserverWithFilter } from '../utils/observable';
-
-const baseURL = 'localhost:4000';
-const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+import { pubSub } from '../utils/pub-sub';
 
 function serializeMessage<T>(id: string, type: SocketType, payload: T): string {
   try {
@@ -15,21 +13,10 @@ function serializeMessage<T>(id: string, type: SocketType, payload: T): string {
   }
 }
 
-interface EventData {
-  type: string;
-  payload: unknown;
-}
-
 class SocketService {
   public socket: WebSocket;
 
   public roomName?: string;
-
-  public error$ = new ObserverWithFilter<EventData>();
-
-  public login$ = new ObserverWithFilter<EventData>();
-
-  public logout$ = new ObserverWithFilter<EventData>();
 
   constructor() {
     this.socket = this.joinBuildWSClient();
@@ -67,26 +54,28 @@ class SocketService {
     try {
       const response: WsMessage = JSON.parse(event.data) as WsMessage;
       const { type } = response;
-
-      // подписка
-      switch (type) {
-        case SocketType.ERROR:
-          this.error$.notify({ type: SocketType.ERROR, payload: response.payload.error });
-          break;
-        case SocketType.UserLogin: {
-          this.login$.notify({ type: SocketType.UserLogin, payload: response.payload.user });
-          break;
-        }
-        case SocketType.UserLogout:
-          this.logout$.notify({ type: SocketType.UserLogout, payload: response.payload.user });
-          break;
-        default:
-          break;
+      if (type === SocketType.UserLogin) {
+        const { isLogined, login } = response.payload.user;
+        pubSub.publish('userLoggedIn', { isLogined, login });
+      }
+      if (type === SocketType.ERROR) {
+        pubSub.publish('error', { error: response.payload.error });
+      }
+      if (type === SocketType.AllAuthenticatedUsers) {
+        pubSub.publish('usersActive', { users: response.payload.users });
+      }
+      if (type === SocketType.AllInAuthenticatedUsers) {
+        pubSub.publish('usersInActive', { users: response.payload.users });
+      }
+      if (type === SocketType.UserExternalLogin) {
+        const { isLogined, login } = response.payload.user;
+        pubSub.publish('userExternalLogin', { isLogined, login });
+      }
+      if (type === SocketType.UserExternalLogout) {
+        const { isLogined, login } = response.payload.user;
+        pubSub.publish('userExternalLogout', { isLogined, login });
       }
     } catch (error) {
-      if (error instanceof Error) {
-        console.error(error.message);
-      }
       console.error(error);
     }
   }
@@ -111,5 +100,27 @@ class SocketService {
     });
     return this.sendSocketMessage(userData);
   }
+
+  public allActiveUsers(id: string) {
+    const userData = serializeMessage(id, SocketType.AllAuthenticatedUsers, null);
+    return this.sendSocketMessage(userData);
+  }
+
+  public allInActiveUsers(id: string) {
+    const userData = serializeMessage(id, SocketType.AllInAuthenticatedUsers, null);
+    return this.sendSocketMessage(userData);
+  }
+
+  // public allActiveUsers(id: string) {
+  //   return new Promise((resolve) => {
+  //     console.log(2);
+  //     this.socket.onopen = () => {
+  //       console.log(3);
+  //       const userData = serializeMessage(id, SocketType.AllAuthenticatedUsers, null);
+  //       console.log(userData);
+  //       resolve(this.sendSocketMessage(userData));
+  //     };
+  //   });
+  // }
 }
 export const socketService = new SocketService();

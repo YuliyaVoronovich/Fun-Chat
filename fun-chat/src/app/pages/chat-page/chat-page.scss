@@ -4,3 +4,21 @@
   gap: 5px;
   margin-top: 60px;
 }
+
+.aside {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  width: 50%;
+  padding: 10px;
+}
+
+.users-link {
+  overflow-y: auto;
+  width: 100%;
+  padding: 0;
+  list-style: none;
+}

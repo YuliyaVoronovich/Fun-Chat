@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import { sessionStorageInst } from '../../services/session-service';
-import { socketService } from '../../services/websocket-service';
 import { BaseComponent } from '../../components/base-component';
 import { userService } from '../../services/user-services';
-import { SocketType } from '../../interfaces.ts/sockets';
 import { LoginForm } from '../../components/login-form/login-form';
 import { Modal } from '../../components/modal/modal';
 import { Button } from '../../components/button/button';
 import './login-page.scss';
+import { pubSub } from '../../utils/pub-sub';
 
 export class LoginPage extends BaseComponent {
   private readonly form: LoginForm;
@@ -28,17 +27,20 @@ export class LoginPage extends BaseComponent {
     this.form = new LoginForm(this.getFormData);
     this.appendChildren([this.form, this.about, this.modal]);
 
-    socketService.error$.subscribe(
-      (data) => this.modal.alertMess(data.payload as string, 'danger'),
-      (data) => data.type === SocketType.ERROR,
-    );
+    pubSub.subscribe('error', (payload) => {
+      this.modal.alertMess(payload.error, 'danger');
+    });
 
-    socketService.login$.subscribe(
-      (data) => (data.payload.isLogined ? this.navigate() : null),
-      (data) => data.type === SocketType.UserLogin,
-    );
+    pubSub.subscribe('userLoggedIn', (payload) => {
+      console.log(`User ${payload.login} logged in at ${payload.isLogined}`);
+      if (payload.isLogined) {
+        this.navigate();
+      }
+    });
 
-    socketService.logout$.subscribe((data) => data.type === SocketType.UserLogout);
+    // socketService.logout$.subscribe('userLoggedOut', (payload) => {
+    //   console.log(`User ${payload.user.login} logout`);
+    // });
   }
 
   private getFormData = (login: string, password: string) => {

@@ -1,0 +1,36 @@
+.user-item {
+  cursor: pointer;
+  padding: 5px 0 5px 20px;
+  transition: 0.3s;
+}
+
+.user-label {
+  position: relative;
+  width: 100%;
+}
+
+.user-item:hover {
+  background: rgb(var(--bs-body-color-rgb) 0.03);
+}
+
+.status::before {
+  content: '';
+
+  position: absolute;
+  top: 50%;
+  left: -10px;
+
+  box-sizing: border-box;
+  width: 6px;
+  height: 6px;
+  margin: 0 5% 0 0;
+
+  background: #dc3545;
+  border: 1px solid #dc3545;
+  border-radius: 50%;
+}
+
+.status-active::before {
+  background: #198754;
+  border: 1px solid #198754;
+}
