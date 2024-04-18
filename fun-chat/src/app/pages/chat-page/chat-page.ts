@@ -1,5 +1,6 @@
 import './chat-page.scss';
 import type { IsUserLogin } from 'src/app/interfaces.ts/sockets';
+import { Button } from '../../components/button/button';
 import { Header } from '../../components/header/header';
 import { BaseComponent } from '../../components/base-component';
 import { Footer } from '../../components/footer/footer';
@@ -11,6 +12,8 @@ import { pubSub } from '../../utils/pub-sub';
 import { User } from './user/user';
 
 export class ChatPage extends BaseComponent {
+  private isSelectedUser = false;
+
   private userItems: User[] = [];
 
   private header = new Header();
@@ -27,6 +30,22 @@ export class ChatPage extends BaseComponent {
 
   private chat = new BaseComponent({ tag: 'div', className: 'chat card' });
 
+  private chatHeader = new BaseComponent({ tag: 'div', className: 'chat-header' });
+
+  private chatHeaderStatus = new BaseComponent({ tag: 'span', className: 'status-in-chat' });
+
+  private chatFooter = new BaseComponent({ tag: 'div', className: 'chat-footer' });
+
+  private inputMessage: Input;
+
+  private btnMessage: Button;
+
+  private chatMain = new BaseComponent({
+    tag: 'div',
+    className: 'chat-main',
+    textContent: 'Select a user to send a message...',
+  });
+
   private usersActive: IsUserLogin[] = [];
 
   private usersInActive: IsUserLogin[] = [];
@@ -39,6 +58,21 @@ export class ChatPage extends BaseComponent {
       placeholder: 'Search...',
       onInput: this.searchUser,
     });
+    this.inputMessage = new Input({
+      type: 'text',
+      className: 'form-control',
+      placeholder: 'Input yor message...',
+      disabled: true,
+    });
+    this.btnMessage = new Button({
+      type: 'button',
+      className: 'btn btn-success disabled',
+      textContent: 'Enter',
+    });
+
+    this.chatFooter.appendChildren([this.inputMessage, this.btnMessage]);
+    this.chatHeader.appendChildren([this.chatHeaderStatus]);
+    this.chat.appendChildren([this.chatHeader, this.chatMain, this.chatFooter]);
     this.aside.appendChildren([this.search, this.usersWrapper]);
     this.main.appendChildren([this.aside, this.chat]);
     this.appendChildren([this.header, this.main, this.footer]);
@@ -65,15 +99,18 @@ export class ChatPage extends BaseComponent {
       });
       this.showUsers(this.usersInActive);
     });
-    pubSub.subscribe('userExternalLogin', () => {
+    pubSub.subscribe('userExternalLogin', (payload) => {
+      console.log(payload);
       this.usersWrapper.destroyChildren();
       userService.allActiveUsers();
       userService.allInActiveUsers();
+      this.changeStatusOfSelectedUser(payload);
     });
-    pubSub.subscribe('userExternalLogout', () => {
+    pubSub.subscribe('userExternalLogout', (payload) => {
       this.usersWrapper.destroyChildren();
       userService.allActiveUsers();
       userService.allInActiveUsers();
+      this.changeStatusOfSelectedUser(payload);
     });
   };
 
@@ -92,7 +129,7 @@ export class ChatPage extends BaseComponent {
   };
 
   private showUsers = (users: IsUserLogin[]) => {
-    this.userItems = users.map((user) => new User(user.login, user.isLogined));
+    this.userItems = users.map((user) => new User(user.login, user.isLogined, this.getUser));
     this.usersWrapper.appendChildren([...this.userItems]);
   };
 
@@ -102,5 +139,24 @@ export class ChatPage extends BaseComponent {
     );
     this.usersWrapper.destroyChildren();
     this.showUsers(searchArray);
+  };
+
+  private getUser = (value: IsUserLogin) => {
+    this.isSelectedUser = true;
+    const status = value.isLogined ? 'online' : 'offline';
+    this.chatHeaderStatus.toggleClass(`active`, value.isLogined);
+    this.chatHeaderStatus.setTextContent(`${status}`);
+    this.chatHeader.setTextContent(`${value.login}`);
+    this.chatMain.setTextContent(`Write your first message...`);
+    this.chatHeader.appendChildren([this.chatHeaderStatus]);
+    this.inputMessage.removeAttribute('disabled');
+  };
+
+  private changeStatusOfSelectedUser = (value: IsUserLogin) => {
+    if (this.isSelectedUser) {
+      const status = value.isLogined ? 'online' : 'offline';
+      this.chatHeaderStatus.toggleClass(`active`, value.isLogined);
+      this.chatHeaderStatus.setTextContent(`${status}`);
+    }
   };
 }

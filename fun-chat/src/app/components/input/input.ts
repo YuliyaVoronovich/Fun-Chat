@@ -6,18 +6,22 @@ interface IInput {
   name?: string;
   placeholder?: string;
   value?: string;
+  disabled?: boolean;
   onInput?: (input: string) => void;
 }
 
 export class Input extends BaseComponent<HTMLInputElement> {
-  constructor({ type, className, name, placeholder, value, onInput }: IInput) {
+  constructor({ type, className, name, placeholder, value, disabled, onInput }: IInput) {
     super({
       tag: 'input',
       className,
       type,
-      name,
       placeholder,
+      disabled,
     });
+    if (name) {
+      this.node.name = name;
+    }
     if (value) {
       this.node.value = value;
     }
