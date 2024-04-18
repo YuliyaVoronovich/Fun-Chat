@@ -1,6 +1,6 @@
 import './chat-page.scss';
 import type { IsUserLogin } from 'src/app/interfaces.ts/sockets';
-import { Button } from '../../components/button/button';
+import { MessageForm } from '../../components/message-form/message-form';
 import { Header } from '../../components/header/header';
 import { BaseComponent } from '../../components/base-component';
 import { Footer } from '../../components/footer/footer';
@@ -36,9 +36,7 @@ export class ChatPage extends BaseComponent {
 
   private chatFooter = new BaseComponent({ tag: 'div', className: 'chat-footer' });
 
-  private inputMessage: Input;
-
-  private btnMessage: Button;
+  private messageForm: MessageForm;
 
   private chatMain = new BaseComponent({
     tag: 'div',
@@ -58,19 +56,10 @@ export class ChatPage extends BaseComponent {
       placeholder: 'Search...',
       onInput: this.searchUser,
     });
-    this.inputMessage = new Input({
-      type: 'text',
-      className: 'form-control',
-      placeholder: 'Input yor message...',
-      disabled: true,
-    });
-    this.btnMessage = new Button({
-      type: 'button',
-      className: 'btn btn-success disabled',
-      textContent: 'Enter',
-    });
 
-    this.chatFooter.appendChildren([this.inputMessage, this.btnMessage]);
+    this.messageForm = new MessageForm(this.getTextMessage);
+
+    this.chatFooter.appendChildren([this.messageForm]);
     this.chatHeader.appendChildren([this.chatHeaderStatus]);
     this.chat.appendChildren([this.chatHeader, this.chatMain, this.chatFooter]);
     this.aside.appendChildren([this.search, this.usersWrapper]);
@@ -149,7 +138,7 @@ export class ChatPage extends BaseComponent {
     this.chatHeader.setTextContent(`${value.login}`);
     this.chatMain.setTextContent(`Write your first message...`);
     this.chatHeader.appendChildren([this.chatHeaderStatus]);
-    this.inputMessage.removeAttribute('disabled');
+    // this.inputMessage.removeAttribute('disabled');
   };
 
   private changeStatusOfSelectedUser = (value: IsUserLogin) => {
@@ -158,5 +147,9 @@ export class ChatPage extends BaseComponent {
       this.chatHeaderStatus.toggleClass(`active`, value.isLogined);
       this.chatHeaderStatus.setTextContent(`${status}`);
     }
+  };
+
+  private getTextMessage = (text: string) => {
+    console.log(text);
   };
 }

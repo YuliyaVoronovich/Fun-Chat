@@ -37,10 +37,6 @@ export class LoginPage extends BaseComponent {
         this.navigate();
       }
     });
-
-    // socketService.logout$.subscribe('userLoggedOut', (payload) => {
-    //   console.log(`User ${payload.user.login} logout`);
-    // });
   }
 
   private getFormData = (login: string, password: string) => {
