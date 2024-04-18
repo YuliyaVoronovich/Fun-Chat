@@ -16,13 +16,32 @@ export class MessageForm extends BaseComponent<HTMLFormElement> {
       className: 'form-control',
       placeholder: 'Input yor message...',
       disabled: true,
+      onInput: this.changeStatusBtn,
     });
     this.btnMessage = new Button({
-      type: 'button',
+      type: 'submit',
       className: 'btn btn-success disabled',
       textContent: 'Enter',
     });
 
     this.appendChildren([this.inputMessage, this.btnMessage]);
+
+    this.addListener('submit', (e: Event) => {
+      e.preventDefault();
+      const text = this.inputMessage.getValue();
+      this.onSubmit?.(text);
+    });
   }
+
+  public changeInputStatus = () => {
+    this.inputMessage.removeAttribute('disabled');
+  };
+
+  public resetInputMessage = () => {
+    this.inputMessage.setValue('');
+  };
+
+  private changeStatusBtn = (value: string) => {
+    this.btnMessage.toggleClass('disabled', Boolean(!value));
+  };
 }

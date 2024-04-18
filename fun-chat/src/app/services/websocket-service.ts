@@ -75,6 +75,10 @@ class SocketService {
         const { isLogined, login } = response.payload.user;
         pubSub.publish('userExternalLogout', { isLogined, login });
       }
+      if (type === SocketType.MessageReceived) {
+        const { text, to, from, datetime } = response.payload.message;
+        pubSub.publish('messageReceived', { text, from, to, datetime });
+      }
     } catch (error) {
       console.error(error);
     }
@@ -108,6 +112,17 @@ class SocketService {
 
   public allInActiveUsers(id: string) {
     const userData = serializeMessage(id, SocketType.AllInAuthenticatedUsers, null);
+    return this.sendSocketMessage(userData);
+  }
+
+  public sendMsg(id: string, text: string, to: string) {
+    const userData = serializeMessage(id, SocketType.MessageReceived, {
+      message: {
+        text,
+        to,
+      },
+    });
+
     return this.sendSocketMessage(userData);
   }
 

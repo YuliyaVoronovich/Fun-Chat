@@ -16,6 +16,7 @@ export enum SocketType {
   UserExternalLogout = 'USER_EXTERNAL_LOGOUT',
   AllAuthenticatedUsers = 'USER_ACTIVE',
   AllInAuthenticatedUsers = 'USER_INACTIVE',
+  MessageReceived = 'MSG_SEND',
 }
 
 export type WsMessage =
@@ -25,7 +26,8 @@ export type WsMessage =
   | UserExternalLogout
   | ErrorOut
   | UsersActive
-  | UsersInActive;
+  | UsersInActive
+  | MessageReceived;
 
 export type EventType =
   | 'userLoggedIn'
@@ -42,7 +44,7 @@ export type EventPayloads = {
   userLoggedOut: { login: string; password: string };
   userExternalLogin: { isLogined: boolean; login: string };
   userExternalLogout: { isLogined: boolean; login: string };
-  messageReceived: { message: string; sender: string; timestamp: number };
+  messageReceived: { text: string; from: string; to: string; datetime: number };
   usersActive: { users: IsUserLogin[] };
   usersInActive: { users: IsUserLogin[] };
   error: { error: string };
@@ -110,5 +112,24 @@ export interface UsersInActive {
   type: SocketType.AllInAuthenticatedUsers;
   payload: {
     users: IsUserLogin[];
+  };
+}
+
+export interface MessageReceived {
+  id: string;
+  type: SocketType.MessageReceived;
+  payload: {
+    message: {
+      id: string;
+      from: string;
+      to: string;
+      text: string;
+      datetime: number;
+      status: {
+        isDelivered: boolean;
+        isReaded: boolean;
+        isEdited: boolean;
+      };
+    };
   };
 }

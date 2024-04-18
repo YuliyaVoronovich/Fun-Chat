@@ -1,5 +1,6 @@
 import './chat-page.scss';
 import type { IsUserLogin } from 'src/app/interfaces.ts/sockets';
+import { Message } from '../../components/message/message';
 import { MessageForm } from '../../components/message-form/message-form';
 import { Header } from '../../components/header/header';
 import { BaseComponent } from '../../components/base-component';
@@ -10,9 +11,12 @@ import { sessionStorageInst } from '../../services/session-service';
 import { Input } from '../../components/input/input';
 import { pubSub } from '../../utils/pub-sub';
 import { User } from './user/user';
+import { messageService } from '../../services/message-service';
 
 export class ChatPage extends BaseComponent {
   private isSelectedUser = false;
+
+  private selectedUser = '';
 
   private userItems: User[] = [];
 
@@ -38,11 +42,18 @@ export class ChatPage extends BaseComponent {
 
   private messageForm: MessageForm;
 
+  private chatMainPlaceholder = new BaseComponent({
+    tag: 'div',
+    className: 'chat-main-placeholder',
+    textContent: 'Select a user to send a message...',
+  });
+
   private chatMain = new BaseComponent({
     tag: 'div',
     className: 'chat-main',
-    textContent: 'Select a user to send a message...',
   });
+
+  private isStartChat = false;
 
   private usersActive: IsUserLogin[] = [];
 
@@ -61,6 +72,7 @@ export class ChatPage extends BaseComponent {
 
     this.chatFooter.appendChildren([this.messageForm]);
     this.chatHeader.appendChildren([this.chatHeaderStatus]);
+    this.chatMain.appendChildren([this.chatMainPlaceholder]);
     this.chat.appendChildren([this.chatHeader, this.chatMain, this.chatFooter]);
     this.aside.appendChildren([this.search, this.usersWrapper]);
     this.main.appendChildren([this.aside, this.chat]);
@@ -68,10 +80,11 @@ export class ChatPage extends BaseComponent {
     this.reLogin();
     userService.allActiveUsers();
     userService.allInActiveUsers();
-    this.subsribes();
+    this.subscribesUsers();
+    this.subscribesMessages();
   }
 
-  private subsribes = () => {
+  private subscribesUsers = () => {
     pubSub.subscribe('usersActive', (payload) => {
       this.usersActive = [];
       payload.users.forEach((item) => {
@@ -89,7 +102,6 @@ export class ChatPage extends BaseComponent {
       this.showUsers(this.usersInActive);
     });
     pubSub.subscribe('userExternalLogin', (payload) => {
-      console.log(payload);
       this.usersWrapper.destroyChildren();
       userService.allActiveUsers();
       userService.allInActiveUsers();
@@ -100,6 +112,29 @@ export class ChatPage extends BaseComponent {
       userService.allActiveUsers();
       userService.allInActiveUsers();
       this.changeStatusOfSelectedUser(payload);
+    });
+  };
+
+  private subscribesMessages = () => {
+    pubSub.subscribe('messageReceived', (payload) => {
+      const { text, to, from, datetime } = payload;
+      if (
+        sessionStorageInst.getUser('user')?.login === from ||
+        (sessionStorageInst.getUser('user')?.login === to && this.selectedUser === from)
+      ) {
+        const msg = new Message({
+          text,
+          from,
+          to,
+          datetime,
+          status: { isDelivered: true, isEdited: true, isReaded: true },
+        });
+        if (!this.isStartChat) {
+          this.chatMainPlaceholder.addClass('hide');
+          this.isStartChat = true;
+        }
+        this.chatMain.appendChildren([msg]);
+      }
     });
   };
 
@@ -132,13 +167,14 @@ export class ChatPage extends BaseComponent {
 
   private getUser = (value: IsUserLogin) => {
     this.isSelectedUser = true;
+    this.selectedUser = value.login;
     const status = value.isLogined ? 'online' : 'offline';
     this.chatHeaderStatus.toggleClass(`active`, value.isLogined);
     this.chatHeaderStatus.setTextContent(`${status}`);
     this.chatHeader.setTextContent(`${value.login}`);
-    this.chatMain.setTextContent(`Write your first message...`);
+    this.chatMainPlaceholder.setTextContent(`Write your first message...`);
     this.chatHeader.appendChildren([this.chatHeaderStatus]);
-    // this.inputMessage.removeAttribute('disabled');
+    this.messageForm.changeInputStatus();
   };
 
   private changeStatusOfSelectedUser = (value: IsUserLogin) => {
@@ -150,6 +186,11 @@ export class ChatPage extends BaseComponent {
   };
 
   private getTextMessage = (text: string) => {
-    console.log(text);
+    if (!this.isStartChat) {
+      this.chatMainPlaceholder.addClass('hide');
+      this.isStartChat = true;
+    }
+    messageService.sendMsg(text, this.selectedUser);
+    this.messageForm.resetInputMessage();
   };
 }
