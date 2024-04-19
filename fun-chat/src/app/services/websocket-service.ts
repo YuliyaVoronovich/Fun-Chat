@@ -80,6 +80,7 @@ class SocketService {
         pubSub.publish('messageReceived', { text, from, to, datetime, status });
       }
       if (type === SocketType.MessageHistory) {
+        console.log(response.payload.messages);
         pubSub.publish('messageHistory', { messages: response.payload.messages });
       }
     } catch (error) {
@@ -135,7 +136,6 @@ class SocketService {
         login,
       },
     });
-
     return this.sendSocketMessage(userData);
   }
 

@@ -1,9 +1,9 @@
-export interface User {
+export interface IUser {
   login: string;
   password: string;
 }
 
-export interface Message {
+export interface IMessage {
   text: string;
   from: string;
   to: string;
@@ -11,7 +11,7 @@ export interface Message {
   status: { isDelivered: boolean; isReaded: boolean; isEdited: boolean };
 }
 
-export interface UserLoginned {
+export interface IUserLoginned {
   login: string;
   isLogined: boolean;
 }
@@ -55,10 +55,10 @@ export type EventPayloads = {
   userLoggedOut: { login: string; password: string };
   userExternalLogin: { isLogined: boolean; login: string };
   userExternalLogout: { isLogined: boolean; login: string };
-  messageReceived: Message;
-  messageHistory: { messages: Message[] };
-  usersActive: { users: UserLoginned[] };
-  usersInActive: { users: UserLoginned[] };
+  messageReceived: IMessage;
+  messageHistory: { messages: IMessage[] };
+  usersActive: { users: IUserLoginned[] };
+  usersInActive: { users: IUserLoginned[] };
   error: { error: string };
 };
 
@@ -85,7 +85,7 @@ export interface UserLogout {
   id: string;
   type: SocketType.UserLogout;
   payload: {
-    user: User;
+    user: IUser;
   };
 }
 
@@ -115,7 +115,7 @@ export interface UsersActive {
   id: string;
   type: SocketType.AllAuthenticatedUsers;
   payload: {
-    users: UserLoginned[];
+    users: IUserLoginned[];
   };
 }
 
@@ -123,7 +123,7 @@ export interface UsersInActive {
   id: string;
   type: SocketType.AllInAuthenticatedUsers;
   payload: {
-    users: UserLoginned[];
+    users: IUserLoginned[];
   };
 }
 
@@ -150,6 +150,6 @@ export interface MessageHistory {
   id: string;
   type: SocketType.MessageHistory;
   payload: {
-    messages: Message[];
+    messages: IMessage[];
   };
 }

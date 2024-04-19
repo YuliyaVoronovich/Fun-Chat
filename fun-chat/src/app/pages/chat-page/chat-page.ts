@@ -1,5 +1,5 @@
 import './chat-page.scss';
-import type { UserLoginned } from 'src/app/interfaces.ts/sockets';
+import type { IUserLoginned } from 'src/app/interfaces.ts/sockets';
 import { Message } from '../../components/message/message';
 import { MessageForm } from '../../components/message-form/message-form';
 import { Header } from '../../components/header/header';
@@ -14,6 +14,8 @@ import { User } from './user/user';
 import { messageService } from '../../services/message-service';
 
 export class ChatPage extends BaseComponent {
+  private currentUser = sessionStorageInst.getUser('user')?.login;
+
   private isSelectedUser = false;
 
   private selectedUser = '';
@@ -44,6 +46,8 @@ export class ChatPage extends BaseComponent {
 
   private userMessages: Message[] = [];
 
+  private countUnReadMessages: number[] = [];
+
   private chatMainPlaceholder = new BaseComponent({
     tag: 'div',
     className: 'chat-main-placeholder',
@@ -57,9 +61,9 @@ export class ChatPage extends BaseComponent {
 
   private isStartChat = false;
 
-  private usersActive: UserLoginned[] = [];
+  private usersActive: IUserLoginned[] = [];
 
-  private usersInActive: UserLoginned[] = [];
+  private usersInActive: IUserLoginned[] = [];
 
   constructor() {
     super({ tag: 'div', className: 'chat-wrapper' });
@@ -90,8 +94,9 @@ export class ChatPage extends BaseComponent {
     pubSub.subscribe('usersActive', (payload) => {
       this.usersActive = [];
       payload.users.forEach((item) => {
-        if (item.login !== sessionStorageInst.getUser('user')?.login) {
+        if (item.login !== this.currentUser) {
           this.usersActive.push(item);
+          this.getHistoryFromUser(item.login);
         }
       });
       this.showUsers(this.usersActive);
@@ -100,6 +105,7 @@ export class ChatPage extends BaseComponent {
       this.usersInActive = [];
       payload.users.forEach((item) => {
         this.usersInActive.push(item);
+        this.getHistoryFromUser(item.login);
       });
       this.showUsers(this.usersInActive);
     });
@@ -120,10 +126,7 @@ export class ChatPage extends BaseComponent {
   private subscribesMessages = () => {
     pubSub.subscribe('messageReceived', (payload) => {
       const { text, to, from, datetime, status } = payload;
-      if (
-        sessionStorageInst.getUser('user')?.login === from ||
-        (sessionStorageInst.getUser('user')?.login === to && this.selectedUser === from)
-      ) {
+      if (this.currentUser === from || (this.currentUser === to && this.selectedUser === from)) {
         const msg = new Message({
           text,
           from,
@@ -136,15 +139,27 @@ export class ChatPage extends BaseComponent {
           this.isStartChat = true;
         }
         this.chatMain.appendChildren([msg]);
+      } else {
+        this.getHistoryFromUser(from);
       }
     });
     pubSub.subscribe('messageHistory', (payload) => {
-      this.chatMain.destroyChildren();
-      this.userMessages = payload.messages.map(
-        (message) =>
-          new Message({ text: message.text, from: message.from, datetime: message.datetime, status: message.status }),
-      );
-      this.chatMain.appendChildren([...this.userMessages]);
+      if (this.isSelectedUser && payload.messages.length > 0) {
+        this.chatMain.destroyChildren();
+        this.userMessages = payload.messages.map(
+          (message) =>
+            new Message({ text: message.text, from: message.from, datetime: message.datetime, status: message.status }),
+        );
+        this.chatMain.appendChildren([...this.userMessages]);
+      } else {
+        console.log(this.countUnReadMessages);
+        this.countUnReadMessages.push(
+          payload.messages.filter((item) => item.to === this.currentUser).filter((item) => !item.status.isReaded)
+            .length,
+        );
+        this.usersWrapper.destroyChildren();
+        this.showUsers([...this.usersActive, ...this.usersInActive]);
+      }
     });
   };
 
@@ -162,8 +177,10 @@ export class ChatPage extends BaseComponent {
     }
   };
 
-  private showUsers = (users: UserLoginned[]) => {
-    this.userItems = users.map((user) => new User(user.login, user.isLogined, this.getUser));
+  private showUsers = (users: IUserLoginned[]) => {
+    this.userItems = users.map(
+      (user, index) => new User(user.login, user.isLogined, this.countUnReadMessages[index], this.getUser),
+    );
     this.usersWrapper.appendChildren([...this.userItems]);
   };
 
@@ -175,7 +192,7 @@ export class ChatPage extends BaseComponent {
     this.showUsers(searchArray);
   };
 
-  private getUser = (value: UserLoginned) => {
+  private getUser = (value: IUserLoginned) => {
     this.isSelectedUser = true;
     this.selectedUser = value.login;
     const status = value.isLogined ? 'online' : 'offline';
@@ -186,10 +203,10 @@ export class ChatPage extends BaseComponent {
     this.chatHeader.appendChildren([this.chatHeaderStatus]);
     this.messageForm.changeInputStatus();
 
-    this.getHistoryFromUser(value);
+    this.getHistoryFromUser(value.login);
   };
 
-  private changeStatusOfSelectedUser = (value: UserLoginned) => {
+  private changeStatusOfSelectedUser = (value: IUserLoginned) => {
     if (this.isSelectedUser) {
       const status = value.isLogined ? 'online' : 'offline';
       this.chatHeaderStatus.toggleClass(`active`, value.isLogined);
@@ -207,7 +224,7 @@ export class ChatPage extends BaseComponent {
     this.messageForm.changeStatusBtn('');
   };
 
-  private getHistoryFromUser = (value: UserLoginned) => {
-    messageService.getHistoryMsg(value.login);
+  private getHistoryFromUser = (value: string) => {
+    messageService.getHistoryMsg(value);
   };
 }

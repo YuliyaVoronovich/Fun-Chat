@@ -1,24 +1,33 @@
-import type { UserLoginned } from 'src/app/interfaces.ts/sockets';
+import type { IUserLoginned } from 'src/app/interfaces.ts/sockets';
 import { BaseComponent } from '../../../components/base-component';
 import './user.scss';
 
 export class User extends BaseComponent {
   private label: BaseComponent;
 
-  private currentUser: UserLoginned;
+  private countMsg: BaseComponent;
 
-  constructor(login: string, isLogined: boolean, onClick: (el: UserLoginned) => void) {
+  private currentUser: IUserLoginned;
+
+  constructor(login: string, isLogined: boolean, countMessageUnRead: number, onClick: (el: IUserLoginned) => void) {
     super({ tag: 'li', className: 'user-item' });
     this.currentUser = {
       login,
       isLogined,
     };
+    const countUnReadMsg = countMessageUnRead || '';
     const online = isLogined ? '-active' : '-no-active';
+    this.countMsg = new BaseComponent({
+      tag: 'span',
+      className: `badge text-bg-danger`,
+      textContent: `${countUnReadMsg}`,
+    });
     this.label = new BaseComponent({
       tag: 'div',
       className: `user-label status status${online}`,
       textContent: `${login}`,
     });
+    this.label.appendChildren([this.countMsg]);
     if (onClick) {
       this.addListener('click', () => {
         onClick(this.currentUser);

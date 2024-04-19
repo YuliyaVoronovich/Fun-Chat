@@ -1,4 +1,4 @@
-import type { User } from '../interfaces.ts/sockets';
+import type { IUser } from '../interfaces.ts/sockets';
 
 class SessionStorage {
   public setItem(key: string, value: unknown): void {
@@ -15,7 +15,7 @@ class SessionStorage {
     return null;
   }
 
-  public getUser(key: string): User | null {
+  public getUser(key: string): IUser | null {
     const user = SessionStorage.getItem(`${key}`);
 
     if (!user) {
@@ -33,7 +33,7 @@ class SessionStorage {
     return !!sessionStorage.getItem(`${key}`);
   }
 
-  private static isUser(value: unknown): value is User {
+  private static isUser(value: unknown): value is IUser {
     return Boolean(value) && typeof value === 'object';
   }
 
