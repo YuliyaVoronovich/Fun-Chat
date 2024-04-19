@@ -25,7 +25,7 @@ export class Message extends BaseComponent {
     const textMsg = new BaseComponent({ tag: 'div', className: 'msg-text', textContent: `${text}` });
     const dataMsg = new BaseComponent({ tag: 'div', className: 'msg-date', textContent: `${this.setDate(datetime)}` });
 
-    const statusRead = sessionStorageInst.getUser('user')?.login === from && status.isDelivered ? 'Read' : '';
+    const statusRead = sessionStorageInst.getUser('user')?.login === from && status.isDelivered ? 'Delivered' : '';
     const statusMsg = new BaseComponent({ tag: 'div', className: 'msg-status', textContent: `${statusRead}` });
     const name = sessionStorageInst.getUser('user')?.login === from ? 'You' : from;
 

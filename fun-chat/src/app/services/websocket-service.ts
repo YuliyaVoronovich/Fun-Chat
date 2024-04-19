@@ -76,8 +76,11 @@ class SocketService {
         pubSub.publish('userExternalLogout', { isLogined, login });
       }
       if (type === SocketType.MessageReceived) {
-        const { text, to, from, datetime } = response.payload.message;
-        pubSub.publish('messageReceived', { text, from, to, datetime });
+        const { text, to, from, datetime, status } = response.payload.message;
+        pubSub.publish('messageReceived', { text, from, to, datetime, status });
+      }
+      if (type === SocketType.MessageHistory) {
+        pubSub.publish('messageHistory', { messages: response.payload.messages });
       }
     } catch (error) {
       console.error(error);
@@ -120,6 +123,16 @@ class SocketService {
       message: {
         text,
         to,
+      },
+    });
+
+    return this.sendSocketMessage(userData);
+  }
+
+  public getHistoryMsg(id: string, login: string) {
+    const userData = serializeMessage(id, SocketType.MessageHistory, {
+      user: {
+        login,
       },
     });
 

@@ -1,5 +1,5 @@
 import './chat-page.scss';
-import type { IsUserLogin } from 'src/app/interfaces.ts/sockets';
+import type { UserLoginned } from 'src/app/interfaces.ts/sockets';
 import { Message } from '../../components/message/message';
 import { MessageForm } from '../../components/message-form/message-form';
 import { Header } from '../../components/header/header';
@@ -42,6 +42,8 @@ export class ChatPage extends BaseComponent {
 
   private messageForm: MessageForm;
 
+  private userMessages: Message[] = [];
+
   private chatMainPlaceholder = new BaseComponent({
     tag: 'div',
     className: 'chat-main-placeholder',
@@ -55,9 +57,9 @@ export class ChatPage extends BaseComponent {
 
   private isStartChat = false;
 
-  private usersActive: IsUserLogin[] = [];
+  private usersActive: UserLoginned[] = [];
 
-  private usersInActive: IsUserLogin[] = [];
+  private usersInActive: UserLoginned[] = [];
 
   constructor() {
     super({ tag: 'div', className: 'chat-wrapper' });
@@ -117,7 +119,7 @@ export class ChatPage extends BaseComponent {
 
   private subscribesMessages = () => {
     pubSub.subscribe('messageReceived', (payload) => {
-      const { text, to, from, datetime } = payload;
+      const { text, to, from, datetime, status } = payload;
       if (
         sessionStorageInst.getUser('user')?.login === from ||
         (sessionStorageInst.getUser('user')?.login === to && this.selectedUser === from)
@@ -127,7 +129,7 @@ export class ChatPage extends BaseComponent {
           from,
           to,
           datetime,
-          status: { isDelivered: true, isEdited: true, isReaded: true },
+          status: { isDelivered: status.isDelivered, isEdited: status.isEdited, isReaded: status.isReaded },
         });
         if (!this.isStartChat) {
           this.chatMainPlaceholder.addClass('hide');
@@ -135,6 +137,14 @@ export class ChatPage extends BaseComponent {
         }
         this.chatMain.appendChildren([msg]);
       }
+    });
+    pubSub.subscribe('messageHistory', (payload) => {
+      this.chatMain.destroyChildren();
+      this.userMessages = payload.messages.map(
+        (message) =>
+          new Message({ text: message.text, from: message.from, datetime: message.datetime, status: message.status }),
+      );
+      this.chatMain.appendChildren([...this.userMessages]);
     });
   };
 
@@ -152,7 +162,7 @@ export class ChatPage extends BaseComponent {
     }
   };
 
-  private showUsers = (users: IsUserLogin[]) => {
+  private showUsers = (users: UserLoginned[]) => {
     this.userItems = users.map((user) => new User(user.login, user.isLogined, this.getUser));
     this.usersWrapper.appendChildren([...this.userItems]);
   };
@@ -165,7 +175,7 @@ export class ChatPage extends BaseComponent {
     this.showUsers(searchArray);
   };
 
-  private getUser = (value: IsUserLogin) => {
+  private getUser = (value: UserLoginned) => {
     this.isSelectedUser = true;
     this.selectedUser = value.login;
     const status = value.isLogined ? 'online' : 'offline';
@@ -175,9 +185,11 @@ export class ChatPage extends BaseComponent {
     this.chatMainPlaceholder.setTextContent(`Write your first message...`);
     this.chatHeader.appendChildren([this.chatHeaderStatus]);
     this.messageForm.changeInputStatus();
+
+    this.getHistoryFromUser(value);
   };
 
-  private changeStatusOfSelectedUser = (value: IsUserLogin) => {
+  private changeStatusOfSelectedUser = (value: UserLoginned) => {
     if (this.isSelectedUser) {
       const status = value.isLogined ? 'online' : 'offline';
       this.chatHeaderStatus.toggleClass(`active`, value.isLogined);
@@ -192,5 +204,10 @@ export class ChatPage extends BaseComponent {
     }
     messageService.sendMsg(text, this.selectedUser);
     this.messageForm.resetInputMessage();
+    this.messageForm.changeStatusBtn('');
+  };
+
+  private getHistoryFromUser = (value: UserLoginned) => {
+    messageService.getHistoryMsg(value.login);
   };
 }

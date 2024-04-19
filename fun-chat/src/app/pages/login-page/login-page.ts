@@ -32,7 +32,6 @@ export class LoginPage extends BaseComponent {
     });
 
     pubSub.subscribe('userLoggedIn', (payload) => {
-      console.log(`User ${payload.login} logged in at ${payload.isLogined}`);
       if (payload.isLogined) {
         this.navigate();
       }

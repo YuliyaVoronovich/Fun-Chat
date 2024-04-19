@@ -3,7 +3,15 @@ export interface User {
   password: string;
 }
 
-export interface IsUserLogin {
+export interface Message {
+  text: string;
+  from: string;
+  to: string;
+  datetime: number;
+  status: { isDelivered: boolean; isReaded: boolean; isEdited: boolean };
+}
+
+export interface UserLoginned {
   login: string;
   isLogined: boolean;
 }
@@ -17,6 +25,7 @@ export enum SocketType {
   AllAuthenticatedUsers = 'USER_ACTIVE',
   AllInAuthenticatedUsers = 'USER_INACTIVE',
   MessageReceived = 'MSG_SEND',
+  MessageHistory = 'MSG_FROM_USER',
 }
 
 export type WsMessage =
@@ -27,7 +36,8 @@ export type WsMessage =
   | ErrorOut
   | UsersActive
   | UsersInActive
-  | MessageReceived;
+  | MessageReceived
+  | MessageHistory;
 
 export type EventType =
   | 'userLoggedIn'
@@ -37,16 +47,18 @@ export type EventType =
   | 'userExternalLogin'
   | 'userExternalLogout'
   | 'error'
-  | 'messageReceived';
+  | 'messageReceived'
+  | 'messageHistory';
 
 export type EventPayloads = {
   userLoggedIn: { isLogined: boolean; login: string };
   userLoggedOut: { login: string; password: string };
   userExternalLogin: { isLogined: boolean; login: string };
   userExternalLogout: { isLogined: boolean; login: string };
-  messageReceived: { text: string; from: string; to: string; datetime: number };
-  usersActive: { users: IsUserLogin[] };
-  usersInActive: { users: IsUserLogin[] };
+  messageReceived: Message;
+  messageHistory: { messages: Message[] };
+  usersActive: { users: UserLoginned[] };
+  usersInActive: { users: UserLoginned[] };
   error: { error: string };
 };
 
@@ -103,7 +115,7 @@ export interface UsersActive {
   id: string;
   type: SocketType.AllAuthenticatedUsers;
   payload: {
-    users: IsUserLogin[];
+    users: UserLoginned[];
   };
 }
 
@@ -111,7 +123,7 @@ export interface UsersInActive {
   id: string;
   type: SocketType.AllInAuthenticatedUsers;
   payload: {
-    users: IsUserLogin[];
+    users: UserLoginned[];
   };
 }
 
@@ -131,5 +143,13 @@ export interface MessageReceived {
         isEdited: boolean;
       };
     };
+  };
+}
+
+export interface MessageHistory {
+  id: string;
+  type: SocketType.MessageHistory;
+  payload: {
+    messages: Message[];
   };
 }

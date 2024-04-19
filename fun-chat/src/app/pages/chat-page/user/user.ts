@@ -1,13 +1,13 @@
-import type { IsUserLogin } from 'src/app/interfaces.ts/sockets';
+import type { UserLoginned } from 'src/app/interfaces.ts/sockets';
 import { BaseComponent } from '../../../components/base-component';
 import './user.scss';
 
 export class User extends BaseComponent {
   private label: BaseComponent;
 
-  private currentUser: IsUserLogin;
+  private currentUser: UserLoginned;
 
-  constructor(login: string, isLogined: boolean, onClick: (el: IsUserLogin) => void) {
+  constructor(login: string, isLogined: boolean, onClick: (el: UserLoginned) => void) {
     super({ tag: 'li', className: 'user-item' });
     this.currentUser = {
       login,
