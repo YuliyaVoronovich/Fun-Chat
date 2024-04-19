@@ -26,6 +26,7 @@ export enum SocketType {
   AllInAuthenticatedUsers = 'USER_INACTIVE',
   MessageReceived = 'MSG_SEND',
   MessageHistory = 'MSG_FROM_USER',
+  MessageDeliver = 'MSG_DELIVER',
 }
 
 export type WsMessage =
@@ -37,7 +38,8 @@ export type WsMessage =
   | UsersActive
   | UsersInActive
   | MessageReceived
-  | MessageHistory;
+  | MessageHistory
+  | MessageDeliver;
 
 export type EventType =
   | 'userLoggedIn'
@@ -47,8 +49,10 @@ export type EventType =
   | 'userExternalLogin'
   | 'userExternalLogout'
   | 'error'
+  | 'connection'
   | 'messageReceived'
-  | 'messageHistory';
+  | 'messageHistory'
+  | 'messageDeliver';
 
 export type EventPayloads = {
   userLoggedIn: { isLogined: boolean; login: string };
@@ -57,9 +61,18 @@ export type EventPayloads = {
   userExternalLogout: { isLogined: boolean; login: string };
   messageReceived: IMessage;
   messageHistory: { messages: IMessage[] };
+  messageDeliver: {
+    message: {
+      id: string;
+      status: {
+        isDelivered: boolean;
+      };
+    };
+  };
   usersActive: { users: IUserLoginned[] };
   usersInActive: { users: IUserLoginned[] };
   error: { error: string };
+  connection: { connection: boolean };
 };
 
 export interface ErrorOut {
@@ -151,5 +164,18 @@ export interface MessageHistory {
   type: SocketType.MessageHistory;
   payload: {
     messages: IMessage[];
+  };
+}
+
+export interface MessageDeliver {
+  id: string;
+  type: SocketType.MessageDeliver;
+  payload: {
+    message: {
+      id: string;
+      status: {
+        isDelivered: boolean;
+      };
+    };
   };
 }

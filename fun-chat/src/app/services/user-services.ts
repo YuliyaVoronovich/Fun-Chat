@@ -1,3 +1,4 @@
+import { sessionStorageInst } from './session-service';
 import { socketService } from './websocket-service';
 
 class UserService {
@@ -16,5 +17,19 @@ class UserService {
   public allInActiveUsers() {
     socketService.allInActiveUsers('222').catch(() => {});
   }
+
+  public reLogin = () => {
+    if (sessionStorageInst.checkUser('user')) {
+      const login = sessionStorageInst.getUser('user')?.login;
+      const password = sessionStorageInst.getUser('user')?.password;
+      if (login && password) {
+        socketService.socket.onopen = () => {
+          this.login(login, password);
+          this.allActiveUsers();
+          this.allInActiveUsers();
+        };
+      }
+    }
+  };
 }
 export const userService = new UserService();

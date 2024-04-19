@@ -3,6 +3,7 @@ import type { WsMessage } from '../interfaces.ts/sockets';
 import { SocketType } from '../interfaces.ts/sockets';
 
 import { pubSub } from '../utils/pub-sub';
+import { sessionStorageInst } from './session-service';
 
 function serializeMessage<T>(id: string, type: SocketType, payload: T): string {
   try {
@@ -38,14 +39,32 @@ class SocketService {
     });
   }
 
-  public joinBuildWSClient(): WebSocket {
+  public joinBuildWSClient() {
     const ws = new WebSocket(`${wsProtocol}://${baseURL}`);
 
+    ws.onopen = (): void => {
+      pubSub.publish('connection', { connection: true });
+      if (sessionStorageInst.checkUser('user')) {
+        const login = sessionStorageInst.getUser('user')?.login;
+        const password = sessionStorageInst.getUser('user')?.password;
+        if (login && password) {
+          this.login('id', login, password).catch(() => {});
+        }
+      }
+    };
     ws.onmessage = (event: MessageEvent<string>): void => {
       this.stateUpdater(event);
     };
-    ws.onerror = (event: Event): void => {
+    ws.onclose = () => {
+      pubSub.publish('error', { error: 'Socket is closed. Reconnect will be attempted...' });
+      setTimeout(() => {
+        this.socket = this.joinBuildWSClient();
+      }, 1000);
+    };
+
+    ws.onerror = (event: Event) => {
       console.error('ws connection error', event);
+      ws.close();
     };
     return ws;
   }

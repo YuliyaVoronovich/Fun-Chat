@@ -30,6 +30,10 @@ export class LoginPage extends BaseComponent {
     pubSub.subscribe('error', (payload) => {
       this.modal.alertMess(payload.error, 'danger');
     });
+    pubSub.subscribe('connection', (payload) => {
+      console.log(payload);
+      this.modal.closeModal();
+    });
 
     pubSub.subscribe('userLoggedIn', (payload) => {
       if (payload.isLogined) {

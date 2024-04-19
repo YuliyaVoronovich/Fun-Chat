@@ -28,7 +28,7 @@ export class Modal extends BaseComponent {
     this.modal.appendChildren([this.btnClose]);
   };
 
-  private closeModal = () => {
+  public closeModal = () => {
     this.modal.addClass('fade');
     this.modal.removeClass('show');
   };

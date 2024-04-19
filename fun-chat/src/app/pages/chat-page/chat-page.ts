@@ -5,13 +5,13 @@ import { MessageForm } from '../../components/message-form/message-form';
 import { Header } from '../../components/header/header';
 import { BaseComponent } from '../../components/base-component';
 import { Footer } from '../../components/footer/footer';
-import { socketService } from '../../services/websocket-service';
 import { userService } from '../../services/user-services';
 import { sessionStorageInst } from '../../services/session-service';
 import { Input } from '../../components/input/input';
 import { pubSub } from '../../utils/pub-sub';
 import { User } from './user/user';
 import { messageService } from '../../services/message-service';
+import { Modal } from '../../components/modal/modal';
 
 export class ChatPage extends BaseComponent {
   private currentUser = sessionStorageInst.getUser('user')?.login;
@@ -65,6 +65,8 @@ export class ChatPage extends BaseComponent {
 
   private usersInActive: IUserLoginned[] = [];
 
+  private readonly modal = new Modal();
+
   constructor() {
     super({ tag: 'div', className: 'chat-wrapper' });
     this.search = new Input({
@@ -82,12 +84,20 @@ export class ChatPage extends BaseComponent {
     this.chat.appendChildren([this.chatHeader, this.chatMain, this.chatFooter]);
     this.aside.appendChildren([this.search, this.usersWrapper]);
     this.main.appendChildren([this.aside, this.chat]);
-    this.appendChildren([this.header, this.main, this.footer]);
-    this.reLogin();
+    this.appendChildren([this.header, this.main, this.footer, this.modal]);
+    userService.reLogin();
     userService.allActiveUsers();
     userService.allInActiveUsers();
     this.subscribesUsers();
     this.subscribesMessages();
+    pubSub.subscribe('error', (payload) => {
+      console.log(payload);
+      this.modal.alertMess(payload.error, 'danger');
+    });
+    pubSub.subscribe('connection', (payload) => {
+      console.log(payload);
+      this.modal.closeModal();
+    });
   }
 
   private subscribesUsers = () => {
@@ -161,20 +171,6 @@ export class ChatPage extends BaseComponent {
         this.showUsers([...this.usersActive, ...this.usersInActive]);
       }
     });
-  };
-
-  private reLogin = () => {
-    if (sessionStorageInst.checkUser('user')) {
-      const login = sessionStorageInst.getUser('user')?.login;
-      const password = sessionStorageInst.getUser('user')?.password;
-      if (login && password) {
-        socketService.socket.onopen = () => {
-          userService.login(login, password);
-          userService.allActiveUsers();
-          userService.allInActiveUsers();
-        };
-      }
-    }
   };
 
   private showUsers = (users: IUserLoginned[]) => {
