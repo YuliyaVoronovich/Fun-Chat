@@ -16,7 +16,7 @@ export class Footer extends BaseComponent {
       href: 'https://rs.school/courses/javascript-mentoring-program',
       target: '_blank',
     });
-    logo.setHTML(`<img class='logo-img' src='./public/img/rs_school_js.svg'>`);
+    logo.setHTML(`<img class='logo-img' src='./img/rs_school_js.svg'>`);
 
     const year = new BaseComponent({ tag: 'div', textContent: '2024' });
 
