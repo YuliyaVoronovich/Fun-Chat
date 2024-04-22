@@ -92,3 +92,20 @@
 .break-line.show {
   visibility: visible;
 }
+
+.custom-scrolbar::-webkit-scrollbar {
+  width: 1px;
+}
+
+.custom-scrolbar::-webkit-scrollbar-track {
+  background: #494747;
+}
+
+.custom-scrolbar::-webkit-scrollbar-thumb {
+  background: rgb(222 226 230 / 20%);
+  border-radius: 3px;
+}
+
+.custom-scrolbar::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

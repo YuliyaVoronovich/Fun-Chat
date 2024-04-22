@@ -59,7 +59,7 @@ export class ChatPage extends BaseComponent {
 
   private chatMain = new BaseComponent({
     tag: 'div',
-    className: 'chat-main',
+    className: 'chat-main custom-scrolbar',
   });
 
   private isStartChat = false;
