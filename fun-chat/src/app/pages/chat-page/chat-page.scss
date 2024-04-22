@@ -82,3 +82,13 @@
 .chat-footer {
   width: 100%;
 }
+
+.break-line {
+  width: 100%;
+  visibility: hidden;
+  border-top: 1px solid #dc3545;
+}
+
+.break-line.show {
+  visibility: visible;
+}

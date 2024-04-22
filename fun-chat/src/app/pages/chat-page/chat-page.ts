@@ -72,6 +72,10 @@ export class ChatPage extends BaseComponent {
 
   private newContext: ContextMenu;
 
+  private breakLine: BaseComponent;
+
+  private isBreakLine = false;
+
   constructor() {
     super({ tag: 'div', className: 'chat-wrapper' });
     this.search = new Input({
@@ -82,12 +86,13 @@ export class ChatPage extends BaseComponent {
     });
 
     this.messageForm = new MessageForm(this.sendMessage);
+    this.breakLine = new BaseComponent({ tag: 'div', className: 'break-line' });
 
     this.chatFooter.appendChildren([this.messageForm]);
     this.chatHeader.appendChildren([this.chatHeaderStatus]);
     this.chatMain.appendChildren([this.chatMainPlaceholder]);
     this.chatMain.addListener('click', this.clickChatMain);
-    this.chatMain.addListener('scroll', this.clickChatMain);
+    this.chatMain.addListener('wheel', this.clickChatMain);
     this.chat.appendChildren([this.chatHeader, this.chatMain, this.chatFooter]);
     this.aside.appendChildren([this.search, this.usersWrapper]);
     this.main.appendChildren([this.aside, this.chat]);
@@ -250,7 +255,7 @@ export class ChatPage extends BaseComponent {
 
   private addNewMessage = (payload: IMessage) => {
     const { id, text, to, from, datetime, status } = payload;
-    return new Message({
+    const newMsg = new Message({
       id,
       text,
       from,
@@ -260,6 +265,14 @@ export class ChatPage extends BaseComponent {
       onContext: this.contextMenuMsg,
       onClick: this.destroyMenuMsg,
     });
+    console.log(payload.status.isReaded);
+    if (!payload.status.isReaded && !this.isBreakLine && this.currentUser === to) {
+      this.breakLine = new BaseComponent({ tag: 'div', className: 'break-line show' });
+      newMsg.prepend(this.breakLine);
+      this.isBreakLine = true;
+    }
+
+    return newMsg;
   };
 
   private sendMessage = (idMsg: string, text: string, isEdit: boolean) => {
@@ -307,6 +320,8 @@ export class ChatPage extends BaseComponent {
         selectUser.countUnReadMsg = '';
       }
     });
+    this.breakLine.destroy();
+    this.isBreakLine = false;
   };
 
   private clickChatMain = () => {

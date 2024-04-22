@@ -47,6 +47,15 @@ export class BaseComponent<T extends HTMLElement = HTMLElement> {
     this.node.after(child.getNode());
   }
 
+  public prepend(child: BaseComponent): void {
+    if (child instanceof BaseComponent) {
+      this.children.push(child);
+      this.node.prepend(child.getNode());
+    } else {
+      this.node.prepend(child);
+    }
+  }
+
   public getNode(): HTMLElement {
     return this.node;
   }
