@@ -35,7 +35,6 @@ export class Message extends BaseComponent {
   private container = new BaseComponent({ tag: 'div', className: `msg-container card` });
 
   constructor({ id, text, from, datetime, status, onContext, onClick }: IMessage) {
-    console.log(status);
     const nameClass = sessionStorageInst.getUser('user')?.login === from ? 'name-from' : 'name-to';
     super({ tag: 'div', className: `msg-wrapper ${nameClass}` });
     this.setAttribute('id', `${id}`);

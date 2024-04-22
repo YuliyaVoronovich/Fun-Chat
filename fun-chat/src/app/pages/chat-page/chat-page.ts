@@ -142,8 +142,11 @@ export class ChatPage extends BaseComponent {
           this.chatMainPlaceholder.addClass('hide');
           this.isStartChat = true;
         }
-        this.userMessages.push(msg);
-        this.chatMain.appendChildren([msg]);
+        if (msg) {
+          this.userMessages.push(msg);
+          this.chatMain.appendChildren([msg]);
+        }
+
         this.chatMain.setScrollTop();
       } else {
         this.getHistoryFromUser(from);
@@ -175,7 +178,7 @@ export class ChatPage extends BaseComponent {
     });
     pubSub.subscribe('messageRead', (payload) => {
       this.userMessages.forEach((userMsg) => {
-        if (userMsg.getAttribute('id') === payload.message.id) {
+        if (userMsg && userMsg.getAttribute('id') === payload.message.id) {
           userMsg.updateStatus({ isDelivered: false, isEdited: false, isReaded: payload.message.isReaded });
         }
       });
@@ -192,7 +195,8 @@ export class ChatPage extends BaseComponent {
       this.userMessages.forEach((userMsg) => {
         if (userMsg.getAttribute('id') === payload.message.id) {
           userMsg.destroy();
-          this.newContext.destroy();
+          delete this.userMessages[this.userMessages.indexOf(userMsg)];
+          // this.newContext.destroy();
         }
       });
     });
