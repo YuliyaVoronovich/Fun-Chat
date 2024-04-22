@@ -29,6 +29,7 @@ export enum SocketType {
   MessageHistory = 'MSG_FROM_USER',
   MessageDeliver = 'MSG_DELIVER',
   MessageDelete = 'MSG_DELETE',
+  MessageEdit = 'MSG_EDIT',
 }
 
 export type WsMessage =
@@ -42,7 +43,8 @@ export type WsMessage =
   | MessageReceived
   | MessageHistory
   | MessageDeliver
-  | MessageDelete;
+  | MessageDelete
+  | MessageEdit;
 
 export type EventType =
   | 'userLoggedIn'
@@ -56,7 +58,8 @@ export type EventType =
   | 'messageReceived'
   | 'messageHistory'
   | 'messageDeliver'
-  | 'messageDelete';
+  | 'messageDelete'
+  | 'messageEdit';
 
 export type EventPayloads = {
   userLoggedIn: { isLogined: boolean; login: string };
@@ -75,6 +78,13 @@ export type EventPayloads = {
     message: {
       id: string;
       isDeleted: boolean;
+    };
+  };
+  messageEdit: {
+    message: {
+      id: string;
+      text: string;
+      isEdited: boolean;
     };
   };
   usersActive: { users: IUserLoginned[] };
@@ -196,6 +206,20 @@ export interface MessageDelete {
       id: string;
       status: {
         isDeleted: boolean;
+      };
+    };
+  };
+}
+
+export interface MessageEdit {
+  id: string;
+  type: SocketType.MessageEdit;
+  payload: {
+    message: {
+      id: string;
+      text: string;
+      status: {
+        isEdited: boolean;
       };
     };
   };

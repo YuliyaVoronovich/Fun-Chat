@@ -111,6 +111,15 @@ class SocketService {
           message: { id: response.payload.message.id, isDeleted: response.payload.message.status.isDeleted },
         });
       }
+      if (type === SocketType.MessageEdit) {
+        pubSub.publish('messageEdit', {
+          message: {
+            id: response.payload.message.id,
+            text: response.payload.message.text,
+            isEdited: response.payload.message.status.isEdited,
+          },
+        });
+      }
     } catch (error) {
       console.error(error);
     }
@@ -158,6 +167,17 @@ class SocketService {
     return this.sendSocketMessage(userData);
   }
 
+  public editMsg(id: string, idMsg: string, text: string) {
+    const userData = serializeMessage(id, SocketType.MessageEdit, {
+      message: {
+        id: idMsg,
+        text,
+      },
+    });
+
+    return this.sendSocketMessage(userData);
+  }
+
   public getHistoryMsg(id: string, login: string) {
     const userData = serializeMessage(id, SocketType.MessageHistory, {
       user: {
@@ -175,17 +195,5 @@ class SocketService {
     });
     return this.sendSocketMessage(userData);
   }
-
-  // public allActiveUsers(id: string) {
-  //   return new Promise((resolve) => {
-  //     console.log(2);
-  //     this.socket.onopen = () => {
-  //       console.log(3);
-  //       const userData = serializeMessage(id, SocketType.AllAuthenticatedUsers, null);
-  //       console.log(userData);
-  //       resolve(this.sendSocketMessage(userData));
-  //     };
-  //   });
-  // }
 }
 export const socketService = new SocketService();

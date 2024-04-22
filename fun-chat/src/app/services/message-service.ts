@@ -7,6 +7,10 @@ class MessageService {
     socketService.sendMsg(idConnect, text, getter).catch(() => {});
   }
 
+  public editMsg(idMsg: string, text: string) {
+    socketService.editMsg(idConnect, idMsg, text).catch(() => {});
+  }
+
   public getHistoryMsg(login: string) {
     socketService.getHistoryMsg(idConnect, login).catch(() => {});
   }

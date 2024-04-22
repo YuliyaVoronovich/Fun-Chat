@@ -20,16 +20,21 @@ interface IMessage {
 export class Message extends BaseComponent {
   private statusMsg: BaseComponent;
 
+  private textMsg: BaseComponent;
+
+  private currentTextMsg: string;
+
   private container = new BaseComponent({ tag: 'div', className: `msg-container card` });
 
   constructor({ id, text, from, datetime, status, onContext, onClick }: IMessage) {
     const nameClass = sessionStorageInst.getUser('user')?.login === from ? 'name-from' : 'name-to';
     super({ tag: 'div', className: `msg-wrapper ${nameClass}` });
     this.setAttribute('id', `${id}`);
+    this.currentTextMsg = text;
 
     const header = new BaseComponent({ tag: 'div', className: 'msg-container-header' });
 
-    const textMsg = new BaseComponent({ tag: 'div', className: 'msg-text', textContent: `${text}` });
+    this.textMsg = new BaseComponent({ tag: 'div', className: 'msg-text', textContent: `${this.currentTextMsg}` });
     const dataMsg = new BaseComponent({ tag: 'div', className: 'msg-date', textContent: `${this.setDate(datetime)}` });
 
     const statusDelivered = sessionStorageInst.getUser('user')?.login === from && status.isDelivered ? 'Delivered' : '';
@@ -38,7 +43,7 @@ export class Message extends BaseComponent {
 
     const nameMsg = new BaseComponent({ tag: 'div', className: `msg-name ${nameClass}`, textContent: `${name}` });
     header.appendChildren([nameMsg, dataMsg]);
-    this.container.appendChildren([header, textMsg, this.statusMsg]);
+    this.container.appendChildren([header, this.textMsg, this.statusMsg]);
     this.appendChildren([this.container]);
 
     if (onContext) {
@@ -68,6 +73,18 @@ export class Message extends BaseComponent {
       timeZone: ownerTimeZone,
     });
     return dateTimeFormatter.format(date);
+  };
+
+  public get text() {
+    return this.currentTextMsg;
+  }
+
+  public updateText = (text: string) => {
+    this.textMsg.destroy();
+    this.textMsg = new BaseComponent({ tag: 'div', className: 'msg-text', textContent: `${text}` });
+    this.currentTextMsg = text;
+    this.container.appendChildren([this.textMsg]);
+    this.appendChildren([this.container]);
   };
 
   public updateStatus = (status: boolean) => {

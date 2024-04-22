@@ -81,7 +81,7 @@ export class ChatPage extends BaseComponent {
       onInput: this.searchUser,
     });
 
-    this.messageForm = new MessageForm(this.getTextMessage);
+    this.messageForm = new MessageForm(this.sendMessage);
 
     this.chatFooter.appendChildren([this.messageForm]);
     this.chatHeader.appendChildren([this.chatHeaderStatus]);
@@ -91,18 +91,16 @@ export class ChatPage extends BaseComponent {
     this.aside.appendChildren([this.search, this.usersWrapper]);
     this.main.appendChildren([this.aside, this.chat]);
     this.appendChildren([this.header, this.main, this.footer, this.modal]);
-    this.newContext = new ContextMenu('0', this.editMsg, this.deleteMsg);
+    this.newContext = new ContextMenu('0', '', this.editMsg, this.deleteMsg);
     userService.reLogin();
     userService.allActiveUsers();
     userService.allInActiveUsers();
     this.subscribesUsers();
     this.subscribesMessages();
     pubSub.subscribe('error', (payload) => {
-      console.log(payload);
       this.modal.alertMess(payload.error, 'danger');
     });
-    pubSub.subscribe('connection', (payload) => {
-      console.log(payload);
+    pubSub.subscribe('connection', () => {
       this.modal.closeModal();
     });
   }
@@ -174,6 +172,14 @@ export class ChatPage extends BaseComponent {
         }
       });
     });
+    pubSub.subscribe('messageEdit', (payload) => {
+      this.userMessages.forEach((userMsg) => {
+        if (userMsg.getAttribute('id') === payload.message.id) {
+          userMsg.updateText(payload.message.text);
+          userMsg.updateStatus(payload.message.isEdited);
+        }
+      });
+    });
     pubSub.subscribe('messageDelete', (payload) => {
       this.userMessages.forEach((userMsg) => {
         if (userMsg.getAttribute('id') === payload.message.id) {
@@ -242,12 +248,18 @@ export class ChatPage extends BaseComponent {
     });
   };
 
-  private getTextMessage = (text: string) => {
+  private sendMessage = (idMsg: string, text: string, isEdit: boolean) => {
     if (!this.isStartChat) {
       this.chatMainPlaceholder.addClass('hide');
       this.isStartChat = true;
     }
-    messageService.sendMsg(text, this.selectedUser);
+    if (isEdit) {
+      messageService.editMsg(idMsg, text);
+      this.messageForm.removeInputColor();
+    } else {
+      messageService.sendMsg(text, this.selectedUser);
+    }
+
     this.messageForm.resetInputMessage();
     this.messageForm.changeStatusBtn('');
   };
@@ -259,7 +271,7 @@ export class ChatPage extends BaseComponent {
   private contextMenuMsg = (message: Message, id: string, author: string) => {
     if (author === this.currentUser) {
       this.newContext.destroy();
-      const newContext = new ContextMenu(id, this.editMsg, this.deleteMsg);
+      const newContext = new ContextMenu(id, message.text, this.editMsg, this.deleteMsg);
       this.newContext = newContext;
       this.chatMain.appendChildren([this.newContext]);
       const offsetTop = Number(message.getNodeProperty('offsetTop'));
@@ -271,8 +283,12 @@ export class ChatPage extends BaseComponent {
     this.newContext.destroy();
   };
 
-  private editMsg = (id: string) => {
-    console.log(id);
+  private editMsg = (id: string, text: string) => {
+    this.messageForm.editForm = true;
+    this.messageForm.IdMsg = id;
+    this.messageForm.setValueTextMsg(text);
+    this.messageForm.setInputColor();
+    this.messageForm.changeStatusBtn('true');
   };
 
   private deleteMsg = (id: string) => {
