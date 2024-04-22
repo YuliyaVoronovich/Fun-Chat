@@ -86,6 +86,7 @@ export class ChatPage extends BaseComponent {
     this.chatFooter.appendChildren([this.messageForm]);
     this.chatHeader.appendChildren([this.chatHeaderStatus]);
     this.chatMain.appendChildren([this.chatMainPlaceholder]);
+    this.chatMain.addListener('click', this.destroyMenuMsg);
     this.chat.appendChildren([this.chatHeader, this.chatMain, this.chatFooter]);
     this.aside.appendChildren([this.search, this.usersWrapper]);
     this.main.appendChildren([this.aside, this.chat]);
@@ -237,6 +238,7 @@ export class ChatPage extends BaseComponent {
       datetime,
       status: { isDelivered: status.isDelivered, isEdited: status.isEdited, isReaded: status.isReaded },
       onContext: this.contextMenuMsg,
+      onClick: this.destroyMenuMsg,
     });
   };
 
@@ -254,13 +256,19 @@ export class ChatPage extends BaseComponent {
     messageService.getHistoryMsg(value);
   };
 
-  private contextMenuMsg = (message: Message, id: string) => {
+  private contextMenuMsg = (message: Message, id: string, author: string) => {
+    if (author === this.currentUser) {
+      this.newContext.destroy();
+      const newContext = new ContextMenu(id, this.editMsg, this.deleteMsg);
+      this.newContext = newContext;
+      this.chatMain.appendChildren([this.newContext]);
+      const offsetTop = Number(message.getNodeProperty('offsetTop'));
+      this.newContext.setStyle('top', `${offsetTop + TOP_VALUE_CONTEXT_MENU}px`);
+    }
+  };
+
+  private destroyMenuMsg = () => {
     this.newContext.destroy();
-    const newContext = new ContextMenu(id, this.editMsg, this.deleteMsg);
-    this.newContext = newContext;
-    this.chatMain.appendChildren([this.newContext]);
-    const offsetTop = Number(message.getNodeProperty('offsetTop'));
-    this.newContext.setStyle('top', `${offsetTop + TOP_VALUE_CONTEXT_MENU}px`);
   };
 
   private editMsg = (id: string) => {

@@ -13,7 +13,8 @@ interface IMessage {
     isEdited: boolean;
     isReaded: boolean;
   };
-  onContext: (el: Message, id: string) => void;
+  onContext: (el: Message, id: string, author: string) => void;
+  onClick: () => void;
 }
 
 export class Message extends BaseComponent {
@@ -21,7 +22,7 @@ export class Message extends BaseComponent {
 
   private container = new BaseComponent({ tag: 'div', className: `msg-container card` });
 
-  constructor({ id, text, from, datetime, status, onContext }: IMessage) {
+  constructor({ id, text, from, datetime, status, onContext, onClick }: IMessage) {
     const nameClass = sessionStorageInst.getUser('user')?.login === from ? 'name-from' : 'name-to';
     super({ tag: 'div', className: `msg-wrapper ${nameClass}` });
     this.setAttribute('id', `${id}`);
@@ -43,7 +44,12 @@ export class Message extends BaseComponent {
     if (onContext) {
       this.container.addListener('contextmenu', (e) => {
         e.preventDefault();
-        onContext(this, id);
+        onContext(this, id, from);
+      });
+    }
+    if (onClick) {
+      this.container.addListener('click', () => {
+        onClick();
       });
     }
   }
