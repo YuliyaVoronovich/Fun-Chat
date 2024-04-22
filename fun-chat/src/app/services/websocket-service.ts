@@ -68,7 +68,7 @@ class SocketService {
     };
     return ws;
   }
-
+  // eslint-disable-next-line
   private stateUpdater(event: MessageEvent<string>): void {
     try {
       const response: WsMessage = JSON.parse(event.data) as WsMessage;
@@ -95,12 +95,21 @@ class SocketService {
         pubSub.publish('userExternalLogout', { isLogined, login });
       }
       if (type === SocketType.MessageReceived) {
-        const { text, to, from, datetime, status } = response.payload.message;
-        pubSub.publish('messageReceived', { text, from, to, datetime, status });
+        const { id, text, to, from, datetime, status } = response.payload.message;
+        pubSub.publish('messageReceived', { id, text, from, to, datetime, status });
       }
       if (type === SocketType.MessageHistory) {
-        console.log(response.payload.messages);
         pubSub.publish('messageHistory', { messages: response.payload.messages });
+      }
+      if (type === SocketType.MessageDeliver) {
+        pubSub.publish('messageDeliver', {
+          message: { id: response.payload.message.id, isDelivered: response.payload.message.status.isDelivered },
+        });
+      }
+      if (type === SocketType.MessageDelete) {
+        pubSub.publish('messageDelete', {
+          message: { id: response.payload.message.id, isDeleted: response.payload.message.status.isDeleted },
+        });
       }
     } catch (error) {
       console.error(error);
@@ -153,6 +162,15 @@ class SocketService {
     const userData = serializeMessage(id, SocketType.MessageHistory, {
       user: {
         login,
+      },
+    });
+    return this.sendSocketMessage(userData);
+  }
+
+  public deleteMsg(id: string, idMsg: string) {
+    const userData = serializeMessage(id, SocketType.MessageDelete, {
+      message: {
+        id: idMsg,
       },
     });
     return this.sendSocketMessage(userData);

@@ -1,6 +1,6 @@
 import './chat-page.scss';
-import type { IUserLoginned } from 'src/app/interfaces.ts/sockets';
-import { Message } from '../../components/message/message';
+import type { IMessage, IUserLoginned } from 'src/app/interfaces.ts/sockets';
+import { Message } from './message/message';
 import { MessageForm } from '../../components/message-form/message-form';
 import { Header } from '../../components/header/header';
 import { BaseComponent } from '../../components/base-component';
@@ -12,6 +12,9 @@ import { pubSub } from '../../utils/pub-sub';
 import { User } from './user/user';
 import { messageService } from '../../services/message-service';
 import { Modal } from '../../components/modal/modal';
+import { ContextMenu } from './context-menu/context-menu';
+
+const TOP_VALUE_CONTEXT_MENU = 40;
 
 export class ChatPage extends BaseComponent {
   private currentUser = sessionStorageInst.getUser('user')?.login;
@@ -67,6 +70,8 @@ export class ChatPage extends BaseComponent {
 
   private readonly modal = new Modal();
 
+  private newContext: ContextMenu;
+
   constructor() {
     super({ tag: 'div', className: 'chat-wrapper' });
     this.search = new Input({
@@ -85,6 +90,7 @@ export class ChatPage extends BaseComponent {
     this.aside.appendChildren([this.search, this.usersWrapper]);
     this.main.appendChildren([this.aside, this.chat]);
     this.appendChildren([this.header, this.main, this.footer, this.modal]);
+    this.newContext = new ContextMenu('0', this.editMsg, this.deleteMsg);
     userService.reLogin();
     userService.allActiveUsers();
     userService.allInActiveUsers();
@@ -120,35 +126,25 @@ export class ChatPage extends BaseComponent {
       this.showUsers(this.usersInActive);
     });
     pubSub.subscribe('userExternalLogin', (payload) => {
-      this.usersWrapper.destroyChildren();
-      userService.allActiveUsers();
-      userService.allInActiveUsers();
-      this.changeStatusOfSelectedUser(payload);
+      this.updateUsersAfterExternalLogin(payload);
     });
     pubSub.subscribe('userExternalLogout', (payload) => {
-      this.usersWrapper.destroyChildren();
-      userService.allActiveUsers();
-      userService.allInActiveUsers();
-      this.changeStatusOfSelectedUser(payload);
+      this.updateUsersAfterExternalLogin(payload);
     });
   };
-
+  // eslint-disable-next-line
   private subscribesMessages = () => {
     pubSub.subscribe('messageReceived', (payload) => {
-      const { text, to, from, datetime, status } = payload;
+      const { to, from } = payload;
       if (this.currentUser === from || (this.currentUser === to && this.selectedUser === from)) {
-        const msg = new Message({
-          text,
-          from,
-          to,
-          datetime,
-          status: { isDelivered: status.isDelivered, isEdited: status.isEdited, isReaded: status.isReaded },
-        });
+        const msg = this.addNewMessage(payload);
         if (!this.isStartChat) {
           this.chatMainPlaceholder.addClass('hide');
           this.isStartChat = true;
         }
+        this.userMessages.push(msg);
         this.chatMain.appendChildren([msg]);
+        this.chatMain.setScrollTop();
       } else {
         this.getHistoryFromUser(from);
       }
@@ -156,13 +152,12 @@ export class ChatPage extends BaseComponent {
     pubSub.subscribe('messageHistory', (payload) => {
       if (this.isSelectedUser && payload.messages.length > 0) {
         this.chatMain.destroyChildren();
-        this.userMessages = payload.messages.map(
-          (message) =>
-            new Message({ text: message.text, from: message.from, datetime: message.datetime, status: message.status }),
-        );
+        this.userMessages = payload.messages.map((message) => {
+          return this.addNewMessage(message);
+        });
         this.chatMain.appendChildren([...this.userMessages]);
+        this.chatMain.setScrollTop();
       } else {
-        console.log(this.countUnReadMessages);
         this.countUnReadMessages.push(
           payload.messages.filter((item) => item.to === this.currentUser).filter((item) => !item.status.isReaded)
             .length,
@@ -171,6 +166,28 @@ export class ChatPage extends BaseComponent {
         this.showUsers([...this.usersActive, ...this.usersInActive]);
       }
     });
+    pubSub.subscribe('messageDeliver', (payload) => {
+      this.userMessages.forEach((userMsg) => {
+        if (userMsg.getAttribute('id') === payload.message.id) {
+          userMsg.updateStatus(payload.message.isDelivered);
+        }
+      });
+    });
+    pubSub.subscribe('messageDelete', (payload) => {
+      this.userMessages.forEach((userMsg) => {
+        if (userMsg.getAttribute('id') === payload.message.id) {
+          userMsg.destroy();
+          this.newContext.destroy();
+        }
+      });
+    });
+  };
+
+  private updateUsersAfterExternalLogin = (payload: IUserLoginned) => {
+    this.usersWrapper.destroyChildren();
+    userService.allActiveUsers();
+    userService.allInActiveUsers();
+    this.changeStatusOfSelectedUser(payload);
   };
 
   private showUsers = (users: IUserLoginned[]) => {
@@ -210,6 +227,19 @@ export class ChatPage extends BaseComponent {
     }
   };
 
+  private addNewMessage = (payload: IMessage) => {
+    const { id, text, to, from, datetime, status } = payload;
+    return new Message({
+      id,
+      text,
+      from,
+      to,
+      datetime,
+      status: { isDelivered: status.isDelivered, isEdited: status.isEdited, isReaded: status.isReaded },
+      onContext: this.contextMenuMsg,
+    });
+  };
+
   private getTextMessage = (text: string) => {
     if (!this.isStartChat) {
       this.chatMainPlaceholder.addClass('hide');
@@ -222,5 +252,22 @@ export class ChatPage extends BaseComponent {
 
   private getHistoryFromUser = (value: string) => {
     messageService.getHistoryMsg(value);
+  };
+
+  private contextMenuMsg = (message: Message, id: string) => {
+    this.newContext.destroy();
+    const newContext = new ContextMenu(id, this.editMsg, this.deleteMsg);
+    this.newContext = newContext;
+    this.chatMain.appendChildren([this.newContext]);
+    const offsetTop = Number(message.getNodeProperty('offsetTop'));
+    this.newContext.setStyle('top', `${offsetTop + TOP_VALUE_CONTEXT_MENU}px`);
+  };
+
+  private editMsg = (id: string) => {
+    console.log(id);
+  };
+
+  private deleteMsg = (id: string) => {
+    messageService.deleteMsg(id);
   };
 }

@@ -1,8 +1,9 @@
-import { sessionStorageInst } from '../../services/session-service';
-import { BaseComponent } from '../base-component';
+import { sessionStorageInst } from '../../../services/session-service';
+import { BaseComponent } from '../../../components/base-component';
 import './message.scss';
 
 interface IMessage {
+  id: string;
   text: string;
   from: string;
   to?: string;
@@ -12,27 +13,39 @@ interface IMessage {
     isEdited: boolean;
     isReaded: boolean;
   };
+  onContext: (el: Message, id: string) => void;
 }
 
 export class Message extends BaseComponent {
-  constructor({ text, from, datetime, status }: IMessage) {
+  private statusMsg: BaseComponent;
+
+  private container = new BaseComponent({ tag: 'div', className: `msg-container card` });
+
+  constructor({ id, text, from, datetime, status, onContext }: IMessage) {
     const nameClass = sessionStorageInst.getUser('user')?.login === from ? 'name-from' : 'name-to';
     super({ tag: 'div', className: `msg-wrapper ${nameClass}` });
+    this.setAttribute('id', `${id}`);
 
-    const container = new BaseComponent({ tag: 'div', className: `msg-container card` });
     const header = new BaseComponent({ tag: 'div', className: 'msg-container-header' });
 
     const textMsg = new BaseComponent({ tag: 'div', className: 'msg-text', textContent: `${text}` });
     const dataMsg = new BaseComponent({ tag: 'div', className: 'msg-date', textContent: `${this.setDate(datetime)}` });
 
-    const statusRead = sessionStorageInst.getUser('user')?.login === from && status.isDelivered ? 'Delivered' : '';
-    const statusMsg = new BaseComponent({ tag: 'div', className: 'msg-status', textContent: `${statusRead}` });
+    const statusDelivered = sessionStorageInst.getUser('user')?.login === from && status.isDelivered ? 'Delivered' : '';
+    this.statusMsg = new BaseComponent({ tag: 'div', className: 'msg-status', textContent: `${statusDelivered}` });
     const name = sessionStorageInst.getUser('user')?.login === from ? 'You' : from;
 
     const nameMsg = new BaseComponent({ tag: 'div', className: `msg-name ${nameClass}`, textContent: `${name}` });
     header.appendChildren([nameMsg, dataMsg]);
-    container.appendChildren([header, textMsg, statusMsg]);
-    this.appendChildren([container]);
+    this.container.appendChildren([header, textMsg, this.statusMsg]);
+    this.appendChildren([this.container]);
+
+    if (onContext) {
+      this.container.addListener('contextmenu', (e) => {
+        e.preventDefault();
+        onContext(this, id);
+      });
+    }
   }
 
   private setDate = (datetime: number) => {
@@ -49,5 +62,13 @@ export class Message extends BaseComponent {
       timeZone: ownerTimeZone,
     });
     return dateTimeFormatter.format(date);
+  };
+
+  public updateStatus = (status: boolean) => {
+    this.statusMsg.destroy();
+    const statusDelivered = status ? 'Delivered' : '';
+    this.statusMsg = new BaseComponent({ tag: 'div', className: 'msg-status', textContent: `${statusDelivered}` });
+    this.container.appendChildren([this.statusMsg]);
+    this.appendChildren([this.container]);
   };
 }

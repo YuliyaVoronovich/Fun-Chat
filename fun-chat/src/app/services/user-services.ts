@@ -1,21 +1,23 @@
 import { sessionStorageInst } from './session-service';
 import { socketService } from './websocket-service';
 
+const idConnect = '222';
+
 class UserService {
   public login(login: string, password: string) {
-    socketService.login('222', login, password).catch(() => {});
+    socketService.login(idConnect, login, password).catch(() => {});
   }
 
   public logout(login: string, password: string) {
-    socketService.logout('222', login, password).catch(() => {});
+    socketService.logout(idConnect, login, password).catch(() => {});
   }
 
   public allActiveUsers() {
-    socketService.allActiveUsers('222').catch(() => {});
+    socketService.allActiveUsers(idConnect).catch(() => {});
   }
 
   public allInActiveUsers() {
-    socketService.allInActiveUsers('222').catch(() => {});
+    socketService.allInActiveUsers(idConnect).catch(() => {});
   }
 
   public reLogin = () => {

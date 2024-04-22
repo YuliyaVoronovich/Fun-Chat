@@ -42,6 +42,6 @@ export class MessageForm extends BaseComponent<HTMLFormElement> {
   };
 
   public changeStatusBtn = (value: string) => {
-    this.btnMessage.toggleClass('disabled', Boolean(!value));
+    this.btnMessage.toggleClass('disabled', Boolean(!value.trim()));
   };
 }

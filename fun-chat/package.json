@@ -13,7 +13,7 @@
     "lint": "eslint --ext ts .",
     "lint:fix": "eslint --ext ts --fix .",
     "prepare": "cd .. && husky fun-chat/.husky",
-    "deploy": "gh-pages -d dist -e fun-chat"
+    "deploy": "tsc && vite build && gh-pages -d dist -e fun-chat"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.0.3",

@@ -1,10 +1,11 @@
 .msg-wrapper {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
   align-items: flex-end;
-  margin: 1% 0;
+  justify-content: flex-start;
+
   width: 100%;
+  margin-top: 10px;
 }
 
 .msg-wrapper.name-to {
@@ -13,17 +14,17 @@
 
 .msg-container {
   width: 60%;
-  background: rgba(255, 255, 255, 0.05);
   padding: 0.5rem;
+  background: rgb(255 255 255 / 5%);
 }
 
 .msg-container-header {
-  align-items: center;
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  font-size: 0.8rem;
+  flex-flow: row wrap;
+  align-items: center;
   justify-content: space-between;
+
+  font-size: 0.8rem;
 }
 
 .msg-name.name-from {
@@ -37,7 +38,8 @@
 .msg-status {
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
   align-items: flex-end;
+  justify-content: flex-end;
+
   font-size: 0.7rem;
 }

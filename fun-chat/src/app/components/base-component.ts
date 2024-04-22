@@ -95,6 +95,14 @@ export class BaseComponent<T extends HTMLElement = HTMLElement> {
     this.node.attributeStyleMap.delete(property);
   }
 
+  public setScrollTop(): void {
+    this.node.scrollTop = this.node.scrollHeight;
+  }
+
+  public getNodeProperty(property: keyof HTMLElement) {
+    return this.node[property];
+  }
+
   public addListener(
     event: string,
     listener: (e: Event) => void,

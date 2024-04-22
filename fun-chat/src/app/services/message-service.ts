@@ -1,12 +1,18 @@
 import { socketService } from './websocket-service';
 
+const idConnect = '222';
+
 class MessageService {
   public sendMsg(text: string, getter: string) {
-    socketService.sendMsg('222', text, getter).catch(() => {});
+    socketService.sendMsg(idConnect, text, getter).catch(() => {});
   }
 
   public getHistoryMsg(login: string) {
-    socketService.getHistoryMsg('222', login).catch(() => {});
+    socketService.getHistoryMsg(idConnect, login).catch(() => {});
+  }
+
+  public deleteMsg(id: string) {
+    socketService.deleteMsg(idConnect, id).catch(() => {});
   }
 }
 export const messageService = new MessageService();

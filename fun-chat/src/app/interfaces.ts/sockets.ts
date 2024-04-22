@@ -4,6 +4,7 @@ export interface IUser {
 }
 
 export interface IMessage {
+  id: string;
   text: string;
   from: string;
   to: string;
@@ -27,6 +28,7 @@ export enum SocketType {
   MessageReceived = 'MSG_SEND',
   MessageHistory = 'MSG_FROM_USER',
   MessageDeliver = 'MSG_DELIVER',
+  MessageDelete = 'MSG_DELETE',
 }
 
 export type WsMessage =
@@ -39,7 +41,8 @@ export type WsMessage =
   | UsersInActive
   | MessageReceived
   | MessageHistory
-  | MessageDeliver;
+  | MessageDeliver
+  | MessageDelete;
 
 export type EventType =
   | 'userLoggedIn'
@@ -52,7 +55,8 @@ export type EventType =
   | 'connection'
   | 'messageReceived'
   | 'messageHistory'
-  | 'messageDeliver';
+  | 'messageDeliver'
+  | 'messageDelete';
 
 export type EventPayloads = {
   userLoggedIn: { isLogined: boolean; login: string };
@@ -64,9 +68,13 @@ export type EventPayloads = {
   messageDeliver: {
     message: {
       id: string;
-      status: {
-        isDelivered: boolean;
-      };
+      isDelivered: boolean;
+    };
+  };
+  messageDelete: {
+    message: {
+      id: string;
+      isDeleted: boolean;
     };
   };
   usersActive: { users: IUserLoginned[] };
@@ -175,6 +183,19 @@ export interface MessageDeliver {
       id: string;
       status: {
         isDelivered: boolean;
+      };
+    };
+  };
+}
+
+export interface MessageDelete {
+  id: string;
+  type: SocketType.MessageDelete;
+  payload: {
+    message: {
+      id: string;
+      status: {
+        isDeleted: boolean;
       };
     };
   };

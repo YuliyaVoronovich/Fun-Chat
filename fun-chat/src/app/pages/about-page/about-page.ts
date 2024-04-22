@@ -19,6 +19,7 @@ export class AboutPage extends BaseComponent {
       className: 'author',
       textContent: 'YuliyaVoronovich',
       href: 'https://github.com/yuliyavoronovich',
+      target: '_blank',
     });
     this.btnClose = new Button({
       className: 'btn btn-danger',
