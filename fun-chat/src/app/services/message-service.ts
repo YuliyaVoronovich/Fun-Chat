@@ -18,5 +18,9 @@ class MessageService {
   public deleteMsg(id: string) {
     socketService.deleteMsg(idConnect, id).catch(() => {});
   }
+
+  public readMsg(id: string) {
+    socketService.readMsg(idConnect, id).catch(() => {});
+  }
 }
 export const messageService = new MessageService();

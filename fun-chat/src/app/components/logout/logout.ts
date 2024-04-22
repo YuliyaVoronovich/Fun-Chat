@@ -10,8 +10,8 @@ export class Logout extends Button {
       onClick: (): void => {
         sessionStorageInst.deleteData('user');
 
-        window.location.href = `/`;
-        window.history.pushState({}, '', '/');
+        window.location.href = ``;
+        window.history.pushState({}, '', '');
       },
     });
   }

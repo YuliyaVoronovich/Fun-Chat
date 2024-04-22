@@ -30,6 +30,8 @@ export class Message extends BaseComponent {
 
   private currentTextMsg: string;
 
+  private currentSender: string;
+
   private container = new BaseComponent({ tag: 'div', className: `msg-container card` });
 
   constructor({ id, text, from, datetime, status, onContext, onClick }: IMessage) {
@@ -38,6 +40,7 @@ export class Message extends BaseComponent {
     super({ tag: 'div', className: `msg-wrapper ${nameClass}` });
     this.setAttribute('id', `${id}`);
     this.currentTextMsg = text;
+    this.currentSender = from;
 
     const header = new BaseComponent({ tag: 'div', className: 'msg-container-header' });
 
@@ -86,6 +89,10 @@ export class Message extends BaseComponent {
     return this.currentTextMsg;
   }
 
+  public get sender() {
+    return this.currentSender;
+  }
+
   public updateText = (text: string) => {
     this.textMsg.destroy();
     this.textMsg = new BaseComponent({ tag: 'div', className: 'msg-text', textContent: `${text}` });
@@ -110,9 +117,9 @@ export class Message extends BaseComponent {
 
     if (isEdited) {
       status = 'Edited';
-    } else if (isReaded) {
+    } else if (isReaded && sessionStorageInst.getUser('user')?.login === this.currentSender) {
       status = 'Readed';
-    } else if (isDelivered) {
+    } else if (isDelivered && sessionStorageInst.getUser('user')?.login === this.currentSender) {
       status = 'Delivered';
     }
 

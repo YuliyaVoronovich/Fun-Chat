@@ -111,6 +111,11 @@ class SocketService {
           message: { id: response.payload.message.id, isDeleted: response.payload.message.status.isDeleted },
         });
       }
+      if (type === SocketType.MessageRead) {
+        pubSub.publish('messageRead', {
+          message: { id: response.payload.message.id, isReaded: response.payload.message.status.isReaded },
+        });
+      }
       if (type === SocketType.MessageEdit) {
         pubSub.publish('messageEdit', {
           message: {
@@ -182,6 +187,15 @@ class SocketService {
     const userData = serializeMessage(id, SocketType.MessageHistory, {
       user: {
         login,
+      },
+    });
+    return this.sendSocketMessage(userData);
+  }
+
+  public readMsg(id: string, idMsg: string) {
+    const userData = serializeMessage(id, SocketType.MessageRead, {
+      message: {
+        id: idMsg,
       },
     });
     return this.sendSocketMessage(userData);

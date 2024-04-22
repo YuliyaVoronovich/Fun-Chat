@@ -30,6 +30,7 @@ export enum SocketType {
   MessageDeliver = 'MSG_DELIVER',
   MessageDelete = 'MSG_DELETE',
   MessageEdit = 'MSG_EDIT',
+  MessageRead = 'MSG_READ',
 }
 
 export type WsMessage =
@@ -44,7 +45,8 @@ export type WsMessage =
   | MessageHistory
   | MessageDeliver
   | MessageDelete
-  | MessageEdit;
+  | MessageEdit
+  | MessageRead;
 
 export type EventType =
   | 'userLoggedIn'
@@ -59,7 +61,8 @@ export type EventType =
   | 'messageHistory'
   | 'messageDeliver'
   | 'messageDelete'
-  | 'messageEdit';
+  | 'messageEdit'
+  | 'messageRead';
 
 export type EventPayloads = {
   userLoggedIn: { isLogined: boolean; login: string };
@@ -85,6 +88,12 @@ export type EventPayloads = {
       id: string;
       text: string;
       isEdited: boolean;
+    };
+  };
+  messageRead: {
+    message: {
+      id: string;
+      isReaded: boolean;
     };
   };
   usersActive: { users: IUserLoginned[] };
@@ -193,6 +202,19 @@ export interface MessageDeliver {
       id: string;
       status: {
         isDelivered: boolean;
+      };
+    };
+  };
+}
+
+export interface MessageRead {
+  id: string;
+  type: SocketType.MessageRead;
+  payload: {
+    message: {
+      id: string;
+      status: {
+        isReaded: boolean;
       };
     };
   };

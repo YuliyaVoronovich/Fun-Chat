@@ -86,7 +86,8 @@ export class ChatPage extends BaseComponent {
     this.chatFooter.appendChildren([this.messageForm]);
     this.chatHeader.appendChildren([this.chatHeaderStatus]);
     this.chatMain.appendChildren([this.chatMainPlaceholder]);
-    this.chatMain.addListener('click', this.destroyMenuMsg);
+    this.chatMain.addListener('click', this.clickChatMain);
+    this.chatMain.addListener('scroll', this.clickChatMain);
     this.chat.appendChildren([this.chatHeader, this.chatMain, this.chatFooter]);
     this.aside.appendChildren([this.search, this.usersWrapper]);
     this.main.appendChildren([this.aside, this.chat]);
@@ -169,6 +170,13 @@ export class ChatPage extends BaseComponent {
       this.userMessages.forEach((userMsg) => {
         if (userMsg.getAttribute('id') === payload.message.id) {
           userMsg.updateStatus({ isDelivered: payload.message.isDelivered, isEdited: false, isReaded: false });
+        }
+      });
+    });
+    pubSub.subscribe('messageRead', (payload) => {
+      this.userMessages.forEach((userMsg) => {
+        if (userMsg.getAttribute('id') === payload.message.id) {
+          userMsg.updateStatus({ isDelivered: false, isEdited: false, isReaded: payload.message.isReaded });
         }
       });
     });
@@ -258,6 +266,7 @@ export class ChatPage extends BaseComponent {
       this.messageForm.removeInputColor();
     } else {
       messageService.sendMsg(text, this.selectedUser);
+      this.sendReadMessage();
     }
 
     this.messageForm.resetInputMessage();
@@ -277,6 +286,20 @@ export class ChatPage extends BaseComponent {
       const offsetTop = Number(message.getNodeProperty('offsetTop'));
       this.newContext.setStyle('top', `${offsetTop + TOP_VALUE_CONTEXT_MENU}px`);
     }
+  };
+
+  private sendReadMessage = () => {
+    this.userMessages.forEach((userMsg) => {
+      const id = userMsg.getAttribute('id');
+      if (id && userMsg.sender === this.selectedUser) {
+        messageService.readMsg(id);
+      }
+    });
+  };
+
+  private clickChatMain = () => {
+    this.destroyMenuMsg();
+    this.sendReadMessage();
   };
 
   private destroyMenuMsg = () => {
