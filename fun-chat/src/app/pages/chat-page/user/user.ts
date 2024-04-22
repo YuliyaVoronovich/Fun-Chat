@@ -9,7 +9,7 @@ export class User extends BaseComponent {
 
   private currentUser: IUserLoginned;
 
-  constructor(login: string, isLogined: boolean, countMessageUnRead: number, onClick: (el: IUserLoginned) => void) {
+  constructor(login: string, isLogined: boolean, countMessageUnRead: number, onClick?: (user: IUserLoginned) => void) {
     super({ tag: 'li', className: 'user-item' });
     this.currentUser = {
       login,
@@ -34,5 +34,13 @@ export class User extends BaseComponent {
       });
     }
     this.appendChildren([this.label]);
+  }
+
+  public get user() {
+    return this.currentUser;
+  }
+
+  public set countUnReadMsg(value: string) {
+    this.countMsg.setTextContent(value);
   }
 }

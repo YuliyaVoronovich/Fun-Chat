@@ -153,14 +153,16 @@ export class ChatPage extends BaseComponent {
       }
     });
     pubSub.subscribe('messageHistory', (payload) => {
-      if (this.isSelectedUser && payload.messages.length > 0) {
+      if (this.isSelectedUser) {
         this.chatMain.destroyChildren();
         this.userMessages = payload.messages.map((message) => {
           return this.addNewMessage(message);
         });
         this.chatMain.appendChildren([...this.userMessages]);
         this.chatMain.setScrollTop();
-      } else {
+      }
+      // this.getCountUnReadMessages();
+      else {
         this.countUnReadMessages.push(
           payload.messages.filter((item) => item.to === this.currentUser).filter((item) => !item.status.isReaded)
             .length,
@@ -196,7 +198,7 @@ export class ChatPage extends BaseComponent {
         if (userMsg.getAttribute('id') === payload.message.id) {
           userMsg.destroy();
           delete this.userMessages[this.userMessages.indexOf(userMsg)];
-          // this.newContext.destroy();
+          this.newContext.destroy();
         }
       });
     });
@@ -297,6 +299,12 @@ export class ChatPage extends BaseComponent {
       const id = userMsg.getAttribute('id');
       if (id && userMsg.sender === this.selectedUser) {
         messageService.readMsg(id);
+      }
+    });
+    this.userItems.forEach((item) => {
+      if (item.user.login === this.selectedUser) {
+        const selectUser = item;
+        selectUser.countUnReadMsg = '';
       }
     });
   };
