@@ -17,6 +17,12 @@ interface IMessage {
   onClick: () => void;
 }
 
+interface IStatus {
+  isDelivered: boolean;
+  isEdited: boolean;
+  isReaded: boolean;
+}
+
 export class Message extends BaseComponent {
   private statusMsg: BaseComponent;
 
@@ -27,6 +33,7 @@ export class Message extends BaseComponent {
   private container = new BaseComponent({ tag: 'div', className: `msg-container card` });
 
   constructor({ id, text, from, datetime, status, onContext, onClick }: IMessage) {
+    console.log(status);
     const nameClass = sessionStorageInst.getUser('user')?.login === from ? 'name-from' : 'name-to';
     super({ tag: 'div', className: `msg-wrapper ${nameClass}` });
     this.setAttribute('id', `${id}`);
@@ -37,8 +44,8 @@ export class Message extends BaseComponent {
     this.textMsg = new BaseComponent({ tag: 'div', className: 'msg-text', textContent: `${this.currentTextMsg}` });
     const dataMsg = new BaseComponent({ tag: 'div', className: 'msg-date', textContent: `${this.setDate(datetime)}` });
 
-    const statusDelivered = sessionStorageInst.getUser('user')?.login === from && status.isDelivered ? 'Delivered' : '';
-    this.statusMsg = new BaseComponent({ tag: 'div', className: 'msg-status', textContent: `${statusDelivered}` });
+    const statusMsg = sessionStorageInst.getUser('user')?.login === from ? this.getStatus(status) : '';
+    this.statusMsg = new BaseComponent({ tag: 'div', className: 'msg-status', textContent: `${statusMsg}` });
     const name = sessionStorageInst.getUser('user')?.login === from ? 'You' : from;
 
     const nameMsg = new BaseComponent({ tag: 'div', className: `msg-name ${nameClass}`, textContent: `${name}` });
@@ -87,11 +94,28 @@ export class Message extends BaseComponent {
     this.appendChildren([this.container]);
   };
 
-  public updateStatus = (status: boolean) => {
+  public updateStatus = (status: IStatus) => {
     this.statusMsg.destroy();
-    const statusDelivered = status ? 'Delivered' : '';
-    this.statusMsg = new BaseComponent({ tag: 'div', className: 'msg-status', textContent: `${statusDelivered}` });
+    this.statusMsg = new BaseComponent({
+      tag: 'div',
+      className: 'msg-status',
+      textContent: `${this.getStatus(status)}`,
+    });
     this.container.appendChildren([this.statusMsg]);
     this.appendChildren([this.container]);
+  };
+
+  private getStatus = ({ isDelivered, isEdited, isReaded }: IStatus) => {
+    let status = '';
+
+    if (isEdited) {
+      status = 'Edited';
+    } else if (isReaded) {
+      status = 'Readed';
+    } else if (isDelivered) {
+      status = 'Delivered';
+    }
+
+    return status;
   };
 }

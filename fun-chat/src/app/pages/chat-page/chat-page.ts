@@ -168,7 +168,7 @@ export class ChatPage extends BaseComponent {
     pubSub.subscribe('messageDeliver', (payload) => {
       this.userMessages.forEach((userMsg) => {
         if (userMsg.getAttribute('id') === payload.message.id) {
-          userMsg.updateStatus(payload.message.isDelivered);
+          userMsg.updateStatus({ isDelivered: payload.message.isDelivered, isEdited: false, isReaded: false });
         }
       });
     });
@@ -176,7 +176,7 @@ export class ChatPage extends BaseComponent {
       this.userMessages.forEach((userMsg) => {
         if (userMsg.getAttribute('id') === payload.message.id) {
           userMsg.updateText(payload.message.text);
-          userMsg.updateStatus(payload.message.isEdited);
+          userMsg.updateStatus({ isDelivered: false, isEdited: payload.message.isEdited, isReaded: false });
         }
       });
     });
