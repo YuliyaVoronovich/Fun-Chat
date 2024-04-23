@@ -16,7 +16,6 @@
     "createDefaultProgram": true
   },
   "root": true,
-  //"noInlineConfig": true,
   "plugins": ["import", "@typescript-eslint", "@stylistic/ts", "prettier"],
   "env": {
     "browser": true,
