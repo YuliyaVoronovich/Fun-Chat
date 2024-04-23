@@ -137,6 +137,7 @@ export class ChatPage extends BaseComponent {
       this.updateUsersAfterExternalLogin(payload);
     });
   };
+
   // eslint-disable-next-line
   private subscribesMessages = () => {
     pubSub.subscribe('messageReceived', (payload) => {
@@ -165,9 +166,7 @@ export class ChatPage extends BaseComponent {
         });
         this.chatMain.appendChildren([...this.userMessages]);
         this.chatMain.setScrollTop();
-      }
-      // this.getCountUnReadMessages();
-      else {
+      } else {
         this.countUnReadMessages.push(
           payload.messages.filter((item) => item.to === this.currentUser).filter((item) => !item.status.isReaded)
             .length,
@@ -265,7 +264,6 @@ export class ChatPage extends BaseComponent {
       onContext: this.contextMenuMsg,
       onClick: this.destroyMenuMsg,
     });
-    console.log(payload.status.isReaded);
     if (!payload.status.isReaded && !this.isBreakLine && this.currentUser === to) {
       this.breakLine = new BaseComponent({ tag: 'div', className: 'break-line show' });
       newMsg.prepend(this.breakLine);
