@@ -5,19 +5,27 @@ const idConnect = '222';
 
 class UserService {
   public login(login: string, password: string) {
-    socketService.login(idConnect, login, password).catch(() => {});
+    socketService.login(idConnect, login, password).catch((error: Error) => {
+      throw new Error(error.message);
+    });
   }
 
   public logout(login: string, password: string) {
-    socketService.logout(idConnect, login, password).catch(() => {});
+    socketService.logout(idConnect, login, password).catch((error: Error) => {
+      throw new Error(error.message);
+    });
   }
 
   public allActiveUsers() {
-    socketService.allActiveUsers(idConnect).catch(() => {});
+    socketService.allActiveUsers(idConnect).catch((error: Error) => {
+      throw new Error(error.message);
+    });
   }
 
   public allInActiveUsers() {
-    socketService.allInActiveUsers(idConnect).catch(() => {});
+    socketService.allInActiveUsers(idConnect).catch((error: Error) => {
+      throw new Error(error.message);
+    });
   }
 
   public reLogin = () => {
