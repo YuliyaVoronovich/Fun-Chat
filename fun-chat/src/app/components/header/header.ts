@@ -1,5 +1,6 @@
-import { sessionStorageInst } from '../../services/session-service';
+import { sessionStorageService } from '../../services/session-service';
 import { BaseComponent } from '../base-component';
+import { Button } from '../button/button';
 import { Logout } from '../logout/logout';
 import './header.scss';
 
@@ -10,14 +11,28 @@ export class Header extends BaseComponent {
 
   private btnLogout = new Logout();
 
+  private login = sessionStorageService.getUser('user')?.login;
+
+  private readonly about = new Button({
+    type: 'button',
+    className: 'btn btn-success about-btn',
+    textContent: 'About',
+    onClick: (): void => {
+      window.location.href = `#about`;
+    },
+  });
+
   constructor() {
     super({ tag: 'header', className: 'header card' });
 
     this.user = new BaseComponent({
       tag: 'span',
       className: 'user-title',
-      textContent: `You: ${sessionStorageInst.getUser('user')?.login}`,
     });
-    this.appendChildren([this.nameApp, this.user, this.btnLogout]);
+    if (this.login) {
+      this.setTextContent(`You: ${this.login}`);
+    }
+
+    this.appendChildren([this.nameApp, this.user, this.about, this.btnLogout]);
   }
 }

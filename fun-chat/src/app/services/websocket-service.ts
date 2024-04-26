@@ -2,10 +2,9 @@ import { baseURL, wsProtocol } from '../constants';
 import type { WsMessage } from '../interfaces.ts/sockets';
 import { SocketType } from '../interfaces.ts/sockets';
 
-import { pubSub } from '../utils/pub-sub';
-import { sessionStorageInst } from './session-service';
+import { PubSub } from '../utils/pub-sub';
 
-function serializeMessage<T>(id: string, type: SocketType, payload: T): string {
+export function serializeMessage<T>(id: string, type: SocketType, payload: T): string {
   try {
     return JSON.stringify({ id, type, payload });
   } catch (err) {
@@ -14,10 +13,36 @@ function serializeMessage<T>(id: string, type: SocketType, payload: T): string {
   }
 }
 
+const mls = 1000;
+
 class SocketService {
   public socket: WebSocket;
 
-  public roomName?: string;
+  public userLoggedIn$ = new PubSub<'userLoggedIn'>();
+
+  public usersActive$ = new PubSub<'usersActive'>();
+
+  public usersInActive$ = new PubSub<'usersInActive'>();
+
+  public userExternalLogin$ = new PubSub<'userExternalLogin'>();
+
+  public userExternalLogout$ = new PubSub<'userExternalLogout'>();
+
+  public messageReceived$ = new PubSub<'messageReceived'>();
+
+  public messageHistory$ = new PubSub<'messageHistory'>();
+
+  public messageDeliver$ = new PubSub<'messageDeliver'>();
+
+  public messageDelete$ = new PubSub<'messageDelete'>();
+
+  public messageRead$ = new PubSub<'messageRead'>();
+
+  public messageEdit$ = new PubSub<'messageEdit'>();
+
+  public error$ = new PubSub<'error'>();
+
+  public connection$ = new PubSub<'connection'>();
 
   constructor() {
     this.socket = this.joinBuildWSClient();
@@ -30,7 +55,6 @@ class SocketService {
           this.socket.send(message);
           resolve(true);
         } catch (err) {
-          console.error(err);
           reject(new Error('Error sending message to server'));
         }
       } else {
@@ -43,27 +67,21 @@ class SocketService {
     const ws = new WebSocket(`${wsProtocol}://${baseURL}`);
 
     ws.onopen = (): void => {
-      pubSub.publish('connection', { connection: true });
-      if (sessionStorageInst.checkUser('user')) {
-        const login = sessionStorageInst.getUser('user')?.login;
-        const password = sessionStorageInst.getUser('user')?.password;
-        if (login && password) {
-          this.login('id', login, password).catch(() => {});
-        }
-      }
+      this.connection$.publish('connection', { connection: true });
+      // userService.reLogin();
     };
     ws.onmessage = (event: MessageEvent<string>): void => {
       this.stateUpdater(event);
     };
     ws.onclose = () => {
-      pubSub.publish('error', { error: 'Socket is closed. Reconnect will be attempted...' });
+      this.error$.publish('error', { error: 'Socket is closed. Reconnect will be attempted...' });
       setTimeout(() => {
         this.socket = this.joinBuildWSClient();
-      }, 1000);
+      }, mls);
     };
 
     ws.onerror = (event: Event) => {
-      console.error('ws connection error', event);
+      throw new Error(event.type);
       ws.close();
     };
     return ws;
@@ -75,49 +93,49 @@ class SocketService {
       const { type } = response;
       if (type === SocketType.UserLogin) {
         const { isLogined, login } = response.payload.user;
-        pubSub.publish('userLoggedIn', { isLogined, login });
+        this.userLoggedIn$.publish('userLoggedIn', { isLogined, login });
       }
       if (type === SocketType.ERROR) {
-        pubSub.publish('error', { error: response.payload.error });
+        this.error$.publish('error', { error: response.payload.error });
       }
       if (type === SocketType.AllAuthenticatedUsers) {
-        pubSub.publish('usersActive', { users: response.payload.users });
+        this.usersActive$.publish('usersActive', { users: response.payload.users });
       }
       if (type === SocketType.AllInAuthenticatedUsers) {
-        pubSub.publish('usersInActive', { users: response.payload.users });
+        this.usersInActive$.publish('usersInActive', { users: response.payload.users });
       }
       if (type === SocketType.UserExternalLogin) {
         const { isLogined, login } = response.payload.user;
-        pubSub.publish('userExternalLogin', { isLogined, login });
+        this.userExternalLogin$.publish('userExternalLogin', { isLogined, login });
       }
       if (type === SocketType.UserExternalLogout) {
         const { isLogined, login } = response.payload.user;
-        pubSub.publish('userExternalLogout', { isLogined, login });
+        this.userExternalLogout$.publish('userExternalLogout', { isLogined, login });
       }
       if (type === SocketType.MessageReceived) {
         const { id, text, to, from, datetime, status } = response.payload.message;
-        pubSub.publish('messageReceived', { id, text, from, to, datetime, status });
+        this.messageReceived$.publish('messageReceived', { id, text, from, to, datetime, status });
       }
       if (type === SocketType.MessageHistory) {
-        pubSub.publish('messageHistory', { messages: response.payload.messages });
+        this.messageHistory$.publish('messageHistory', { messages: response.payload.messages });
       }
       if (type === SocketType.MessageDeliver) {
-        pubSub.publish('messageDeliver', {
+        this.messageDeliver$.publish('messageDeliver', {
           message: { id: response.payload.message.id, isDelivered: response.payload.message.status.isDelivered },
         });
       }
       if (type === SocketType.MessageDelete) {
-        pubSub.publish('messageDelete', {
+        this.messageDelete$.publish('messageDelete', {
           message: { id: response.payload.message.id, isDeleted: response.payload.message.status.isDeleted },
         });
       }
       if (type === SocketType.MessageRead) {
-        pubSub.publish('messageRead', {
+        this.messageRead$.publish('messageRead', {
           message: { id: response.payload.message.id, isReaded: response.payload.message.status.isReaded },
         });
       }
       if (type === SocketType.MessageEdit) {
-        pubSub.publish('messageEdit', {
+        this.messageEdit$.publish('messageEdit', {
           message: {
             id: response.payload.message.id,
             text: response.payload.message.text,
@@ -126,88 +144,8 @@ class SocketService {
         });
       }
     } catch (error) {
-      console.error(error);
+      throw new Error(event.type);
     }
-  }
-
-  public login(id: string, login: string, password: string) {
-    const userData = serializeMessage(id, SocketType.UserLogin, {
-      user: {
-        login,
-        password,
-      },
-    });
-
-    return this.sendSocketMessage(userData);
-  }
-
-  public logout(id: string, login: string, password: string) {
-    const userData = serializeMessage(id, SocketType.UserLogout, {
-      user: {
-        login,
-        password,
-      },
-    });
-    return this.sendSocketMessage(userData);
-  }
-
-  public allActiveUsers(id: string) {
-    const userData = serializeMessage(id, SocketType.AllAuthenticatedUsers, null);
-    return this.sendSocketMessage(userData);
-  }
-
-  public allInActiveUsers(id: string) {
-    const userData = serializeMessage(id, SocketType.AllInAuthenticatedUsers, null);
-    return this.sendSocketMessage(userData);
-  }
-
-  public sendMsg(id: string, text: string, to: string) {
-    const userData = serializeMessage(id, SocketType.MessageReceived, {
-      message: {
-        text,
-        to,
-      },
-    });
-
-    return this.sendSocketMessage(userData);
-  }
-
-  public editMsg(id: string, idMsg: string, text: string) {
-    const userData = serializeMessage(id, SocketType.MessageEdit, {
-      message: {
-        id: idMsg,
-        text,
-      },
-    });
-
-    return this.sendSocketMessage(userData);
-  }
-
-  public getHistoryMsg(id: string, login: string) {
-    const userData = serializeMessage(id, SocketType.MessageHistory, {
-      user: {
-        login,
-      },
-    });
-    return this.sendSocketMessage(userData);
-  }
-
-  public readMsg(id: string, idMsg: string) {
-    const userData = serializeMessage(id, SocketType.MessageRead, {
-      message: {
-        id: idMsg,
-      },
-    });
-    return this.sendSocketMessage(userData);
-  }
-
-  public deleteMsg(id: string, idMsg: string) {
-    const userData = serializeMessage(id, SocketType.MessageDelete, {
-      message: {
-        id: idMsg,
-      },
-    });
-    return this.sendSocketMessage(userData);
   }
 }
 export const socketService = new SocketService();

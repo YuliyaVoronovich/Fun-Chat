@@ -1,12 +1,15 @@
 import type { IUser } from '../interfaces.ts/sockets';
+import { isUser } from '../utils/functions';
 
-class SessionStorage {
-  public setItem(key: string, value: unknown): void {
-    sessionStorage.setItem(`${key}`, JSON.stringify(value));
+export class StorageService {
+  constructor(private storage: Storage) {}
+
+  public setItem(key: string, value: unknown) {
+    this.storage.setItem(key, JSON.stringify(value));
   }
 
-  private static getItem(key: string): unknown {
-    const data: string | null = sessionStorage.getItem(key);
+  private getItem(key: string): unknown {
+    const data: string | null = this.storage.getItem(key);
 
     if (data !== null) {
       return JSON.parse(data);
@@ -16,13 +19,13 @@ class SessionStorage {
   }
 
   public getUser(key: string): IUser | null {
-    const user = SessionStorage.getItem(`${key}`);
+    const user = this.getItem(key);
 
     if (!user) {
       return null;
     }
 
-    if (SessionStorage.isUser(user)) {
+    if (isUser(user)) {
       return user;
     }
 
@@ -30,15 +33,11 @@ class SessionStorage {
   }
 
   public checkUser(key: string): boolean {
-    return !!sessionStorage.getItem(`${key}`);
-  }
-
-  private static isUser(value: unknown): value is IUser {
-    return Boolean(value) && typeof value === 'object';
+    return !!this.storage.getItem(`${key}`);
   }
 
   public deleteData(key: string): void {
-    sessionStorage.removeItem(`${key}`);
+    this.storage.removeItem(key);
   }
 }
-export const sessionStorageInst = new SessionStorage();
+export const sessionStorageService = new StorageService(window.sessionStorage);

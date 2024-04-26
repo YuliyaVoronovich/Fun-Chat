@@ -17,6 +17,10 @@ export interface IUserLoginned {
   isLogined: boolean;
 }
 
+export type UnreadMesObj = {
+  [login: string]: number;
+};
+
 export enum SocketType {
   ERROR = 'ERROR',
   UserLogin = 'USER_LOGIN',

@@ -1,36 +1,55 @@
-import { socketService } from './websocket-service';
+import { SocketType } from '../interfaces.ts/sockets';
+import { serializeMessage, socketService } from './websocket-service';
 
-const idConnect = '222';
+export class MessageService {
+  private idConnect = '222';
 
-class MessageService {
-  public sendMsg(text: string, getter: string) {
-    socketService.sendMsg(idConnect, text, getter).catch((error: Error) => {
-      throw new Error(error.message);
+  public sendMsg(text: string, to: string) {
+    const userData = serializeMessage(this.idConnect, SocketType.MessageReceived, {
+      message: {
+        text,
+        to,
+      },
     });
+
+    return socketService.sendSocketMessage(userData);
   }
 
   public editMsg(idMsg: string, text: string) {
-    socketService.editMsg(idConnect, idMsg, text).catch((error: Error) => {
-      throw new Error(error.message);
+    const userData = serializeMessage(this.idConnect, SocketType.MessageEdit, {
+      message: {
+        id: idMsg,
+        text,
+      },
     });
+
+    return socketService.sendSocketMessage(userData);
   }
 
   public getHistoryMsg(login: string) {
-    socketService.getHistoryMsg(idConnect, login).catch((error: Error) => {
-      throw new Error(error.message);
+    const userData = serializeMessage(this.idConnect, SocketType.MessageHistory, {
+      user: {
+        login,
+      },
     });
+    return socketService.sendSocketMessage(userData);
   }
 
   public deleteMsg(id: string) {
-    socketService.deleteMsg(idConnect, id).catch((error: Error) => {
-      throw new Error(error.message);
+    const userData = serializeMessage(this.idConnect, SocketType.MessageDelete, {
+      message: {
+        id,
+      },
     });
+    return socketService.sendSocketMessage(userData);
   }
 
   public readMsg(id: string) {
-    socketService.readMsg(idConnect, id).catch((error: Error) => {
-      throw new Error(error.message);
+    const userData = serializeMessage(this.idConnect, SocketType.MessageRead, {
+      message: {
+        id,
+      },
     });
+    return socketService.sendSocketMessage(userData);
   }
 }
-export const messageService = new MessageService();

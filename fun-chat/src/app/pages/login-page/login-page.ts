@@ -1,14 +1,15 @@
-/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
-import { sessionStorageInst } from '../../services/session-service';
+import { sessionStorageService } from '../../services/session-service';
 import { BaseComponent } from '../../components/base-component';
-import { userService } from '../../services/user-services';
+import { UserService } from '../../services/user-services';
 import { LoginForm } from '../../components/login-form/login-form';
 import { Modal } from '../../components/modal/modal';
 import { Button } from '../../components/button/button';
 import './login-page.scss';
-import { pubSub } from '../../utils/pub-sub';
+import { socketService } from '../../services/websocket-service';
 
 export class LoginPage extends BaseComponent {
+  private readonly userService = new UserService();
+
   private readonly form: LoginForm;
 
   private readonly modal = new Modal();
@@ -27,28 +28,30 @@ export class LoginPage extends BaseComponent {
     this.form = new LoginForm(this.getFormData);
     this.appendChildren([this.form, this.about, this.modal]);
 
-    pubSub.subscribe('error', (payload) => {
+    socketService.error$.subscribe('error', (payload) => {
       this.modal.alertMess(payload.error, 'danger');
     });
-    pubSub.subscribe('connection', () => {
+    socketService.connection$.subscribe('connection', () => {
       this.modal.closeModal();
     });
 
-    pubSub.subscribe('userLoggedIn', (payload) => {
+    socketService.userLoggedIn$.subscribe('userLoggedIn', (payload) => {
       if (payload.isLogined) {
-        this.navigate();
+        window.location.href = `#chat`;
       }
     });
   }
 
   private getFormData = (login: string, password: string) => {
     if (login && password) {
-      userService.login(login, password);
-      sessionStorageInst.setItem('user', { login, password });
+      this.userService.login(login, password).catch((error: Error) => {
+        throw new Error(error.message);
+      });
+      sessionStorageService.setItem('user', { login, password });
     }
   };
 
-  private navigate = () => {
-    window.location.href = `#chat`;
-  };
+  // private navigate = () => {
+  //   window.location.href = `#chat`;
+  // };
 }

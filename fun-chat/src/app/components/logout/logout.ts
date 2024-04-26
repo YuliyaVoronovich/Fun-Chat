@@ -1,4 +1,4 @@
-import { sessionStorageInst } from '../../services/session-service';
+import { sessionStorageService } from '../../services/session-service';
 import { Button } from '../button/button';
 
 export class Logout extends Button {
@@ -8,7 +8,7 @@ export class Logout extends Button {
       className: 'btn btn-sm btn-outline-danger',
       textContent: 'LOGOUT',
       onClick: (): void => {
-        sessionStorageInst.deleteData('user');
+        sessionStorageService.deleteData('user');
 
         window.location.href = ``;
         window.history.pushState({}, '', '');

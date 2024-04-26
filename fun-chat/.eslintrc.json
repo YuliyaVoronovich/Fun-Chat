@@ -22,7 +22,6 @@
     "es2016": true
   },
   "rules": {
-    "no-console": "off",
     "import/prefer-default-export": "off",
     "curly": ["error", "all"],
     "max-lines-per-function": ["error", { "max": 40, "skipBlankLines": true, "skipComments": true }],
@@ -41,7 +40,6 @@
     "@typescript-eslint/consistent-type-exports": "error",
     "@typescript-eslint/consistent-type-imports": "error",
     "@stylistic/ts/indent": ["error", 2],
-    "class-methods-use-this": "off",
     "prettier/prettier": [
       "error",
       {

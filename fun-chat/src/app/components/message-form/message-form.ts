@@ -33,7 +33,9 @@ export class MessageForm extends BaseComponent<HTMLFormElement> {
     this.addListener('submit', (e: Event) => {
       e.preventDefault();
       const text = this.inputMessage.getValue();
-      this.onSubmit?.(this.idMsg, text, this.isEdit);
+      if (text) {
+        this.onSubmit?.(this.idMsg, text, this.isEdit);
+      }
     });
   }
 

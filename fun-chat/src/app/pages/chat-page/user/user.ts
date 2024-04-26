@@ -25,7 +25,7 @@ export class User extends BaseComponent {
     this.label = new BaseComponent({
       tag: 'div',
       className: `user-label status status${online}`,
-      textContent: `${login}`,
+      textContent: login,
     });
     this.label.appendChildren([this.countMsg]);
     if (onClick) {

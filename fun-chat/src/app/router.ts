@@ -1,11 +1,11 @@
 import type { BaseComponent } from './components/base-component';
 import type Page from './pages/page';
-import { sessionStorageInst } from './services/session-service';
+import { sessionStorageService } from './services/session-service';
 
 const mapRoutes = {
   '': () => import('./pages/login-page/login-page').then((item) => item.LoginPage),
   login: () => import('./pages/login-page/login-page').then((item) => item.LoginPage),
-  chat: () => import('./pages/chat-page/chat-page').then((item) => item.ChatPage),
+  chat: () => import('./pages/chat-page/chat-page2').then((item) => item.ChatPage2),
   about: () => import('./pages/about-page/about-page').then((item) => item.AboutPage),
 };
 
@@ -15,32 +15,33 @@ function isValidRoute(route: string): route is Route {
   return Object.keys(mapRoutes).includes(route);
 }
 
-export default class Router {
+export class Router {
+  private location: keyof typeof mapRoutes = '';
+
   constructor(private routerOutlet: Page) {
     window.addEventListener('hashchange', this.handleLocationChange.bind(this));
     this.handleLocationChange();
   }
 
   public handleLocationChange(): void {
-    const isUser: boolean = sessionStorageInst.checkUser('user');
-    const pathname = window.location.hash.slice(1);
+    const isUser: boolean = sessionStorageService.checkUser('user');
+    const pathname = window.location.hash.slice(1) as keyof typeof mapRoutes;
 
-    let currentPath;
     if (!isUser && pathname !== 'about') {
-      currentPath = 'login';
+      this.location = 'login';
     } else if (!pathname || pathname === 'login') {
-      currentPath = 'chat';
+      this.location = 'chat';
     } else {
-      currentPath = `${pathname}`;
+      this.location = pathname;
     }
-    window.location.hash = currentPath;
+    window.location.hash = this.location;
 
-    if (!isValidRoute(currentPath)) {
+    if (!isValidRoute(this.location)) {
       return;
     }
     // TODO Check Autorization login
 
-    this.setViewContent(currentPath)
+    this.setViewContent()
       .then((data) => {
         this.routerOutlet.setContent(data);
       })
@@ -49,8 +50,8 @@ export default class Router {
       });
   }
 
-  private setViewContent = async (location: keyof typeof mapRoutes): Promise<BaseComponent> => {
-    const Page = await mapRoutes[location]();
+  private setViewContent = async (): Promise<BaseComponent> => {
+    const Page = await mapRoutes[this.location]();
     return new Page();
   };
 }
