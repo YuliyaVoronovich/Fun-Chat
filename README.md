@@ -7,7 +7,7 @@
 
 ### Tech stack
  - Typescript
- - Webpack
+ - Vite
  - SASS (SCSS)
  - Eslint, Prettier, Stylelint, Husky
 ### Features
